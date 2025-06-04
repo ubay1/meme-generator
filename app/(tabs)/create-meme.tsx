@@ -1,5 +1,8 @@
-import { ThemedButtonIcon } from "@/components/ThemedButtonIcon";
+import { IconSymbolName } from "@/components/ui/IconSymbol";
+import { ThemedButtonIcon } from "@/components/ui/ThemedButtonIcon";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { Colors } from "@/constants/Colors";
+import { useBottomSheet } from "@/context/BottomSheetContext";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
@@ -19,7 +22,62 @@ function clamp(val: number, min: number, max: number) {
 
 const { width, height } = Dimensions.get("screen");
 
-export default function App() {
+const BottomSheetMainContent = () => {
+  const { close } = useBottomSheet();
+  const colorScheme = useColorScheme();
+  const list: { iconName: IconSymbolName; label: string }[] = [
+    {
+      iconName: "text.page",
+      label: "Teks",
+    },
+    {
+      iconName: "apple.image.playground",
+      label: "Gambar",
+    },
+    {
+      iconName: "trash.fill",
+      label: "Hapus Semua",
+    },
+  ];
+
+  return (
+    <Animated.View>
+      <View
+        style={[
+          bottomSheetStyles.bottomSheetHeader,
+          {
+            borderBottomColor: Colors[colorScheme || "light"].border,
+            // borderBottomWidth: 1,
+          },
+        ]}
+      >
+        <ThemedText type="default">Pilihan</ThemedText>
+        <ThemedButtonIcon
+          iconName="x.circle.fill"
+          style={{ borderWidth: 0 }}
+          onPress={() => close()}
+        ></ThemedButtonIcon>
+      </View>
+      <View style={[bottomSheetStyles.bottomSheetContent]}>
+        {list.map((item) => (
+          <ThemedButtonIcon
+            key={item.label}
+            iconName={item.iconName}
+            label={item.label}
+            style={{
+              borderWidth: 0,
+              display: "flex",
+              flexDirection: "row",
+              gap: 8,
+            }}
+          />
+        ))}
+      </View>
+    </Animated.View>
+  );
+};
+
+export default function CreateMeme() {
   const colorScheme = useColorScheme();
   const translationX = useSharedValue(0);
   const translationY = useSharedValue(0);
@@ -27,6 +85,8 @@ export default function App() {
   const prevTranslationY = useSharedValue(0);
   const scale = useSharedValue(1);
   const startScale = useSharedValue(0);
+
+  const { open } = useBottomSheet();
 
   const pan = Gesture.Pan()
     .minDistance(1)
@@ -106,6 +166,11 @@ export default function App() {
           gap: 8,
         }}
       >
+        <ThemedButtonIcon
+          iconName="plus.app"
+          label="Tambah"
+          onPress={() => open(<BottomSheetMainContent />)}
+        />
         <ThemedButtonIcon iconName="paintpalette" label="Styles" />
         <ThemedButtonIcon iconName="0.square" label="Export" />
       </View>
@@ -118,5 +183,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+});
+const bottomSheetStyles = StyleSheet.create({
+  bottomSheetHeader: {
+    padding: 16,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  bottomSheetContent: {
+    padding: 16,
+    display: "flex",
+    gap: 14,
   },
 });
