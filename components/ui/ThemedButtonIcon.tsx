@@ -1,11 +1,11 @@
-import { IconSymbol, type IconSymbolName } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable, PressableProps } from "react-native";
 
 interface ThemedButtonIconProps extends PressableProps {
-  iconName?: IconSymbolName;
+  iconName?: keyof typeof MaterialCommunityIcons.glyphMap;
   label?: string;
   size?: number;
 }
@@ -38,8 +38,8 @@ export function ThemedButtonIcon({
       {...pressableProps}
     >
       {iconName && (
-        <IconSymbol
-          name={iconName}
+        <MaterialCommunityIcons
+          name={iconName as keyof typeof MaterialCommunityIcons.glyphMap}
           size={size}
           color={Colors[colorScheme || "light"].text2}
         />

@@ -1,11 +1,20 @@
-import { IconSymbolName } from "@/components/ui/IconSymbol";
+import DraggableEditor from "@/components/ui/DraggableTextEditor";
 import { ThemedButtonIcon } from "@/components/ui/ThemedButtonIcon";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { useBottomSheet } from "@/context/BottomSheetContext";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
+import { useEditorStore } from "@/stores/editor";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -25,18 +34,56 @@ const { width, height } = Dimensions.get("screen");
 const BottomSheetMainContent = () => {
   const { close } = useBottomSheet();
   const colorScheme = useColorScheme();
-  const list: { iconName: IconSymbolName; label: string }[] = [
+
+  // Ambil actions dari store
+  const addTextEditor = useEditorStore((state) => state.addTextEditor);
+  const addImageEditor = useEditorStore((state) => state.addImageEditor);
+  const clearAllEditors = useEditorStore((state) => state.clearAllEditors);
+
+  const list: {
+    iconName: keyof typeof MaterialCommunityIcons.glyphMap;
+    label: string;
+    action: () => void;
+  }[] = [
     {
-      iconName: "text.page",
+      iconName: "format-text",
       label: "Teks",
+      action: () => {
+        addTextEditor();
+        close();
+      },
     },
     {
-      iconName: "apple.image.playground",
+      iconName: "image",
       label: "Gambar",
+      action: () => {
+        addImageEditor();
+        close();
+      },
     },
     {
-      iconName: "trash.fill",
+      iconName: "trash-can",
       label: "Hapus Semua",
+      action: () => {
+        Alert.alert(
+          "Konfirmasi",
+          "Apakah Anda yakin ingin menghapus semua item?",
+          [
+            {
+              text: "Batal",
+              style: "cancel",
+            },
+            {
+              text: "Hapus",
+              onPress: () => {
+                clearAllEditors();
+                close();
+              },
+              style: "destructive",
+            },
+          ]
+        );
+      },
     },
   ];
 
@@ -47,13 +94,12 @@ const BottomSheetMainContent = () => {
           bottomSheetStyles.bottomSheetHeader,
           {
             borderBottomColor: Colors[colorScheme || "light"].border,
-            // borderBottomWidth: 1,
           },
         ]}
       >
         <ThemedText type="default">Pilihan</ThemedText>
         <ThemedButtonIcon
-          iconName="x.circle.fill"
+          iconName="close"
           style={{ borderWidth: 0 }}
           onPress={() => close()}
         ></ThemedButtonIcon>
@@ -66,10 +112,10 @@ const BottomSheetMainContent = () => {
             label={item.label}
             style={{
               borderWidth: 0,
-              display: "flex",
-              flexDirection: "row",
+              flexDirection: "row", // Gunakan 'flexDirection' bukan 'display' di React Native
               gap: 8,
             }}
+            onPress={item.action}
           />
         ))}
       </View>
@@ -136,6 +182,19 @@ export default function CreateMeme() {
 
   const composedGestures = Gesture.Simultaneous(pan, pinch);
 
+  const items = useEditorStore((state) => state.items); // Ganti 'texts' menjadi 'items'
+  const focusedItemId = useEditorStore((state) => state.focusedItemId);
+  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  // const addTextEditor = useEditorStore((state) => state.addTextEditor); // Action untuk menambah teks
+  // const addImageEditor = useEditorStore((state) => state.addImageEditor); // Action untuk menambah gambar
+  // const clearAllEditors = useEditorStore((state) => state.clearAllEditors); // Action untuk menghapus semua
+
+  // Fungsi untuk menangani tap di luar komponen editor
+  const handleOutsidePress = () => {
+    setFocusedItem(null); // Hapus fokus dari semua komponen editor
+    Keyboard.dismiss(); // Tutup keyboard
+  };
+
   return (
     <View style={styles.container}>
       <GestureHandlerRootView style={styles.container}>
@@ -154,6 +213,17 @@ export default function CreateMeme() {
             ]}
           ></Animated.View>
         </GestureDetector>
+        <TouchableWithoutFeedback onPress={handleOutsidePress}>
+          <View style={StyleSheet.absoluteFillObject}>
+            {items.map((item) => (
+              <DraggableEditor
+                key={item.id}
+                item={item}
+                isFocused={focusedItemId === item.id}
+              />
+            ))}
+          </View>
+        </TouchableWithoutFeedback>
       </GestureHandlerRootView>
       <View
         style={{
@@ -167,12 +237,12 @@ export default function CreateMeme() {
         }}
       >
         <ThemedButtonIcon
-          iconName="plus.app"
+          iconName="plus"
           label="Tambah"
           onPress={() => open(<BottomSheetMainContent />)}
         />
-        <ThemedButtonIcon iconName="paintpalette" label="Styles" />
-        <ThemedButtonIcon iconName="0.square" label="Export" />
+        <ThemedButtonIcon iconName="palette" label="Styles" />
+        <ThemedButtonIcon iconName="export-variant" label="Export" />
       </View>
     </View>
   );

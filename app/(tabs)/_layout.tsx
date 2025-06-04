@@ -1,8 +1,8 @@
 import { HapticTab } from "@/components/ui/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { BottomSheetProvider } from "@/context/BottomSheetContext";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
@@ -40,7 +40,7 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="house" color={color} />
+              <Feather size={20} name="home" color={color} />
             ),
           }}
         />
@@ -49,7 +49,7 @@ export default function TabLayout() {
           options={{
             title: "Buat Meme",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="plus.circle" color={color} />
+              <Feather size={20} name="plus-circle" color={color} />
             ),
           }}
         />

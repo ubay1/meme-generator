@@ -1,11 +1,11 @@
 import { PropsWithChildren, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export function Collapsible({
   children,
@@ -21,10 +21,9 @@ export function Collapsible({
         onPress={() => setIsOpen((value) => !value)}
         activeOpacity={0.8}
       >
-        <IconSymbol
-          name="chevron.right"
+        <MaterialCommunityIcons
+          name="chevron-right"
           size={18}
-          weight="medium"
           color={theme === "light" ? Colors.light.icon : Colors.dark.icon}
           style={{ transform: [{ rotate: isOpen ? "90deg" : "0deg" }] }}
         />
