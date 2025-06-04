@@ -18,11 +18,16 @@ export type IconSymbolName = keyof typeof MAPPING;
  */
 const MAPPING = {
   house: "home",
+  "plus.app": "plus",
   "plus.circle": "plus-circle",
   "chevron.left": "chevron-left",
   "chevron.right": "chevron-right",
   paintpalette: "palette-outline",
   "0.square": "export",
+  "x.circle.fill": "close",
+  "text.page": "format-text",
+  "apple.image.playground": "image",
+  "trash.fill": "trash-can",
 } as IconMapping;
 
 /**
