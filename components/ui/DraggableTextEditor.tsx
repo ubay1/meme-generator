@@ -1,4 +1,4 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -402,6 +402,9 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
 
         {isFocused && (
           <>
+            <TouchableOpacity style={styles.moveButton} onPress={handleDelete}>
+              <Feather name="move" size={24} color="black" />
+            </TouchableOpacity>
             {/* Delete Button */}
             <TouchableOpacity
               style={styles.deleteButton}
@@ -475,6 +478,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -40,
     right: -30,
+    zIndex: 1,
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 5, // Tambahkan padding untuk area sentuhan
+  },
+  moveButton: {
+    position: "absolute",
+    top: -40,
+    left: "40%",
     zIndex: 1,
     backgroundColor: "white",
     borderRadius: 15,
