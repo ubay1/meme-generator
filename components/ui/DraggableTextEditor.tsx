@@ -221,99 +221,6 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
       );
     });
 
-  // --- Resize Gesture (Top-Left Handle) ---
-  const topLeftResizeGesture = Gesture.Pan()
-    .onStart(() => {
-      runOnJS(setFocusedItem)(item.id);
-      savedWidth.value = currentWidth.value;
-      savedHeight.value = currentHeight.value;
-      savedOriginalX.value = translateX.value;
-      savedOriginalY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      let newWidth = Math.max(MIN_WIDTH, savedWidth.value - event.translationX);
-      let newHeight = Math.max(
-        MIN_HEIGHT,
-        savedHeight.value - event.translationY
-      );
-
-      currentWidth.value = newWidth;
-      currentHeight.value = newHeight;
-      // Perbarui X dan Y agar item bergerak seolah di-resize dari TL
-      translateX.value = savedOriginalX.value + event.translationX;
-      translateY.value = savedOriginalY.value + event.translationY;
-    })
-    .onEnd(() => {
-      runOnJS(saveSizeToStore)(
-        translateX.value,
-        translateY.value,
-        currentWidth.value,
-        currentHeight.value
-      );
-    });
-
-  // --- Resize Gesture (Top-Right Handle) ---
-  const topRightResizeGesture = Gesture.Pan()
-    .onStart(() => {
-      runOnJS(setFocusedItem)(item.id);
-      savedWidth.value = currentWidth.value;
-      savedHeight.value = currentHeight.value;
-      savedOriginalX.value = translateX.value;
-      savedOriginalY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      let newWidth = Math.max(MIN_WIDTH, savedWidth.value + event.translationX);
-      let newHeight = Math.max(
-        MIN_HEIGHT,
-        savedHeight.value - event.translationY
-      );
-
-      currentWidth.value = newWidth;
-      currentHeight.value = newHeight;
-      // Perbarui Y agar item bergerak seolah di-resize dari TR
-      translateY.value = savedOriginalY.value + event.translationY;
-      // Posisi X tidak berubah untuk TR
-    })
-    .onEnd(() => {
-      runOnJS(saveSizeToStore)(
-        translateX.value,
-        translateY.value,
-        currentWidth.value,
-        currentHeight.value
-      );
-    });
-
-  // --- Resize Gesture (Bottom-Left Handle) ---
-  const bottomLeftResizeGesture = Gesture.Pan()
-    .onStart(() => {
-      runOnJS(setFocusedItem)(item.id);
-      savedWidth.value = currentWidth.value;
-      savedHeight.value = currentHeight.value;
-      savedOriginalX.value = translateX.value;
-      savedOriginalY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      let newWidth = Math.max(MIN_WIDTH, savedWidth.value - event.translationX);
-      let newHeight = Math.max(
-        MIN_HEIGHT,
-        savedHeight.value + event.translationY
-      );
-
-      currentWidth.value = newWidth;
-      currentHeight.value = newHeight;
-      // Perbarui X agar item bergerak seolah di-resize dari BL
-      translateX.value = savedOriginalX.value + event.translationX;
-      // Posisi Y tidak berubah untuk BL
-    })
-    .onEnd(() => {
-      runOnJS(saveSizeToStore)(
-        translateX.value,
-        translateY.value,
-        currentWidth.value,
-        currentHeight.value
-      );
-    });
-
   // Animated style untuk item utama
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -357,7 +264,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
       <Animated.View style={[styles.dragArea, animatedStyle]}>
         <View style={styles.contentContainer}>
           {item.type === "text" ? (
-            isEditing ? (
+            isFocused && isEditing ? (
               <TextInput
                 style={[
                   styles.textInput,
@@ -417,17 +324,17 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
               <FontAwesome5 name="copy" size={24} color="black" />
             </TouchableOpacity>
             {/* Resizing handles */}
-            <GestureDetector gesture={topLeftResizeGesture}>
+            {/* <GestureDetector gesture={topLeftResizeGesture}>
               <Animated.View style={styles.resizeHandleTopLeft} />
-            </GestureDetector>
+            </GestureDetector> */}
             {/* <View style={styles.resizeHandleTopCenter} /> */}
             {/* Dihapus sementara */}
-            <GestureDetector gesture={topRightResizeGesture}>
+            {/* <GestureDetector gesture={topRightResizeGesture}>
               <Animated.View style={styles.resizeHandleTopRight} />
-            </GestureDetector>
-            <GestureDetector gesture={bottomLeftResizeGesture}>
+            </GestureDetector> */}
+            {/* <GestureDetector gesture={bottomLeftResizeGesture}>
               <Animated.View style={styles.resizeHandleBottomLeft} />
-            </GestureDetector>
+            </GestureDetector> */}
             {/* <View style={styles.resizeHandleBottomCenter} /> */}
             {/* Dihapus sementara */}
             <GestureDetector gesture={bottomRightResizeGesture}>
