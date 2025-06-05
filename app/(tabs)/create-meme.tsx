@@ -6,12 +6,15 @@ import { useBottomSheet } from "@/context/BottomSheetContext";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 import { useEditorStore } from "@/stores/editor";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Dimensions,
+  Image,
   Keyboard,
+  ScrollView,
   StyleSheet,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -132,6 +135,16 @@ export default function CreateMeme() {
   const scale = useSharedValue(1);
   const startScale = useSharedValue(0);
 
+  const templatesMeme = [
+    { id: 1, img: require("../../assets/images/template1.jpg") },
+    { id: 2, img: require("../../assets/images/template2.jpg") },
+    { id: 3, img: require("../../assets/images/template3.jpg") },
+    { id: 4, img: require("../../assets/images/template4.jpg") },
+    { id: 5, img: require("../../assets/images/template5.jpg") },
+    { id: 6, img: require("../../assets/images/template6.jpg") },
+  ];
+  const [template, selectTemplate] = useState<string | any>("blank");
+
   const { open } = useBottomSheet();
 
   const pan = Gesture.Pan()
@@ -185,9 +198,6 @@ export default function CreateMeme() {
   const items = useEditorStore((state) => state.items); // Ganti 'texts' menjadi 'items'
   const focusedItemId = useEditorStore((state) => state.focusedItemId);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
-  // const addTextEditor = useEditorStore((state) => state.addTextEditor); // Action untuk menambah teks
-  // const addImageEditor = useEditorStore((state) => state.addImageEditor); // Action untuk menambah gambar
-  // const clearAllEditors = useEditorStore((state) => state.clearAllEditors); // Action untuk menghapus semua
 
   // Fungsi untuk menangani tap di luar komponen editor
   const handleOutsidePress = () => {
@@ -196,55 +206,113 @@ export default function CreateMeme() {
   };
 
   return (
-    <View style={styles.container}>
-      <GestureHandlerRootView style={styles.container}>
-        <GestureDetector gesture={composedGestures}>
-          <Animated.View
-            style={[
-              composeStyle,
-              {
-                width: 200,
-                height: 200,
-                backgroundColor: Colors[colorScheme || "light"].background2,
-                borderColor: Colors[colorScheme || "light"].border,
-                borderWidth: 1,
-                borderRadius: 0,
-              },
-            ]}
-          ></Animated.View>
-        </GestureDetector>
-        <TouchableWithoutFeedback onPress={handleOutsidePress}>
-          <View style={StyleSheet.absoluteFillObject}>
-            {items.map((item) => (
-              <DraggableEditor
-                key={item.id}
-                item={item}
-                isFocused={focusedItemId === item.id}
-              />
-            ))}
-          </View>
-        </TouchableWithoutFeedback>
-      </GestureHandlerRootView>
+    <>
       <View
         style={{
-          marginVertical: 10,
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 8,
+          margin: 10,
         }}
       >
-        <ThemedButtonIcon
-          iconName="plus"
-          label="Tambah"
-          onPress={() => open(<BottomSheetMainContent />)}
-        />
-        <ThemedButtonIcon iconName="palette" label="Styles" />
-        <ThemedButtonIcon iconName="export-variant" label="Export" />
+        <ThemedText type="default" style={{ textAlign: "left" }}>
+          Template
+        </ThemedText>
+        <View style={{ flexDirection: "row", marginTop: 10 }}>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+              <TouchableOpacity onPress={() => selectTemplate("blank")}>
+                <View
+                  style={[
+                    styles.header,
+                    {
+                      backgroundColor:
+                        Colors[colorScheme || "light"].background2,
+                      borderStyle: "dashed",
+                      borderWidth: 2,
+                      borderColor: Colors[colorScheme || "light"].text2,
+                    },
+                  ]}
+                >
+                  <ThemedText type="default">Blank</ThemedText>
+                </View>
+              </TouchableOpacity>
+              {templatesMeme.map((template) => (
+                <TouchableOpacity
+                  key={template.id}
+                  onPress={() => selectTemplate(template.img)}
+                >
+                  <Image
+                    source={template.img}
+                    style={styles.image}
+                    alt="image"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </View>
-    </View>
+      <View style={styles.container}>
+        <GestureHandlerRootView style={styles.container}>
+          <GestureDetector gesture={composedGestures}>
+            {template !== "blank" ? (
+              <Animated.Image
+                source={template}
+                style={[
+                  composeStyle,
+                  {
+                    width: 200,
+                    height: 200,
+                  },
+                ]}
+                alt="image"
+              />
+            ) : (
+              <Animated.View
+                style={[
+                  composeStyle,
+                  {
+                    width: 200,
+                    height: 200,
+                    backgroundColor: "#fff",
+                    borderColor: Colors[colorScheme || "light"].border,
+                    borderWidth: 1,
+                    borderRadius: 0,
+                  },
+                ]}
+              ></Animated.View>
+            )}
+          </GestureDetector>
+          <TouchableWithoutFeedback onPress={handleOutsidePress}>
+            <View style={StyleSheet.absoluteFillObject}>
+              {items.map((item) => (
+                <DraggableEditor
+                  key={item.id}
+                  item={item}
+                  isFocused={focusedItemId === item.id}
+                />
+              ))}
+            </View>
+          </TouchableWithoutFeedback>
+        </GestureHandlerRootView>
+        <View
+          style={{
+            marginVertical: 10,
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <ThemedButtonIcon
+            iconName="plus"
+            onPress={() => open(<BottomSheetMainContent />)}
+          />
+          <ThemedButtonIcon iconName="palette-outline" />
+          <ThemedButtonIcon iconName="download-circle-outline" />
+        </View>
+      </View>
+    </>
   );
 }
 
@@ -253,6 +321,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  header: {
+    width: 100,
+    height: 100,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    objectFit: "fill",
   },
 });
 const bottomSheetStyles = StyleSheet.create({
