@@ -295,9 +295,8 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
   );
   const fontDefault = [fontRobotoSlab];
 
-  const paragraph = (text: string) => {
+  const createParagraph = (text: string, width: number) => {
     // Are the font loaded already?
-
     const paragraphStyle = {
       textAlign: TextAlign.Center,
     };
@@ -306,10 +305,14 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
       fontFamilies: ["sans-serif"],
       fontSize: 20,
     };
-    return Skia.ParagraphBuilder.Make(paragraphStyle)
+    const builder = Skia.ParagraphBuilder.Make(paragraphStyle)
       .pushStyle(textStyle)
-      .addText(text)
-      .build();
+      .addText(text);
+
+    const p = builder.build();
+    p.layout(width - 20);
+
+    return p;
   };
 
   return (
@@ -338,19 +341,26 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                   setIsEditing(true);
                 }}
               >
-                <Canvas
-                  style={{
-                    width: item.width,
-                    height: 140,
-                  }}
-                >
-                  <ParagrafSkia
-                    x={10}
-                    y={50}
-                    width={item.width - 20}
-                    paragraph={paragraph(item.text ?? "Hello")}
-                  ></ParagrafSkia>
-                </Canvas>
+                {(() => {
+                  const p = createParagraph(item.text ?? "Hello", item.width);
+                  const heightCanvas = p.getHeight(); // hitung tinggi yang dibutuhkan
+                  // console.log("heightCanvas", heightCanvas);
+                  return (
+                    <Canvas
+                      style={{
+                        width: item.width,
+                        height: heightCanvas,
+                      }}
+                    >
+                      <ParagrafSkia
+                        x={0}
+                        y={0}
+                        width={item.width - 20}
+                        paragraph={p}
+                      ></ParagrafSkia>
+                    </Canvas>
+                  );
+                })()}
               </TouchableOpacity>
             )
           ) : (

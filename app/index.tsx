@@ -5,22 +5,9 @@ import { ThemedView } from "@/components/ui/ThemedView";
 
 export default function HomeScreen() {
   return (
-    // <ParallaxScrollView
-    //   headerBackgroundColor={{ light: "#000", dark: "#1D3D47" }}
-    //   headerImage={
-    //     <Image
-    //       source={require("@/assets/images/hero2.jpg")}
-    //       style={styles.reactLogo}
-    //     />
-    //   }
-    // >
     <ThemedView style={styles.titleContainer}>
-      {/* <ThemedText type="title" style={{ textAlign: "center" }}>
-          Selamat Datang di meme generator <HelloWave />
-        </ThemedText> */}
       <LearnSkia />
     </ThemedView>
-    // </ParallaxScrollView>
   );
 }
 

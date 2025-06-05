@@ -8,7 +8,6 @@ import * as MediaLibrary from "expo-media-library";
 import React, { useRef, useState } from "react";
 import {
   Alert,
-  Button,
   Dimensions,
   Image as ImageRN,
   Keyboard,
@@ -327,7 +326,6 @@ const ImageSkia = () => {
 
   return (
     <>
-      <Button title="Pick an image from camera roll" onPress={pickImage} />
       <View
         style={{ flexDirection: "row", paddingHorizontal: 10, marginTop: 10 }}
       >
@@ -380,7 +378,6 @@ const ImageSkia = () => {
         <GestureDetector gesture={composedGestures}>
           <Animated.View
             ref={viewRef}
-            // collapsable={false}
             style={[
               composeStyle,
               {
@@ -446,10 +443,7 @@ const ImageSkia = () => {
           gap: 8,
         }}
       >
-        {/* <ThemedButtonIcon
-          iconName="plus"
-          onPress={() => open(<BottomSheetMainContent />)}
-        /> */}
+        <ThemedButtonIcon iconName="image" onPress={pickImage} />
         <ThemedButtonIcon iconName="format-text" onPress={addTextEditor} />
         <ThemedButtonIcon
           iconName="download-circle-outline"
