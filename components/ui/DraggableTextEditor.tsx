@@ -5,7 +5,6 @@ import {
   Paragraph as ParagrafSkia,
   Skia,
   TextAlign,
-  useFont,
 } from "@shopify/react-native-skia";
 import React, { useEffect, useState } from "react";
 import {
@@ -268,32 +267,31 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
   };
 
   // const font = useFont(require("../../assets/fonts/SpaceMono-Regular.ttf"), 12);
-
-  const fontBario = useFont(
-    require("../../assets/fonts/Barrio-Regular.ttf"),
-    12
-  );
-  const fontEduSa = useFont(
-    require("../../assets/fonts/EduSAHand-Medium.ttf"),
-    12
-  );
-  const fontInter = useFont(
-    require("../../assets/fonts/Inter_18pt-Medium.ttf"),
-    12
-  );
-  const fontMontserat = useFont(
-    require("../../assets/fonts/Montserrat-Medium.ttf"),
-    12
-  );
-  const fontRobotoCondesed = useFont(
-    require("../../assets/fonts/Roboto_Condensed-Regular.ttf"),
-    12
-  );
-  const fontRobotoSlab = useFont(
-    require("../../assets/fonts/RobotoSlab-Medium.ttf"),
-    12
-  );
-  const fontDefault = [fontRobotoSlab];
+  // const fontBario = useFont(
+  //   require("../../assets/fonts/Barrio-Regular.ttf"),
+  //   12
+  // );
+  // const fontEduSa = useFont(
+  //   require("../../assets/fonts/EduSAHand-Medium.ttf"),
+  //   12
+  // );
+  // const fontInter = useFont(
+  //   require("../../assets/fonts/Inter_18pt-Medium.ttf"),
+  //   12
+  // );
+  // const fontMontserat = useFont(
+  //   require("../../assets/fonts/Montserrat-Medium.ttf"),
+  //   12
+  // );
+  // const fontRobotoCondesed = useFont(
+  //   require("../../assets/fonts/Roboto_Condensed-Regular.ttf"),
+  //   12
+  // );
+  // const fontRobotoSlab = useFont(
+  //   require("../../assets/fonts/RobotoSlab-Medium.ttf"),
+  //   12
+  // );
+  // const fontDefault = [fontRobotoSlab];
 
   const createParagraph = (text: string, width: number) => {
     // Are the font loaded already?
@@ -303,7 +301,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
     const textStyle = {
       color: Skia.Color("black"),
       fontFamilies: ["sans-serif"],
-      fontSize: 20,
+      fontSize: 14,
     };
     const builder = Skia.ParagraphBuilder.Make(paragraphStyle)
       .pushStyle(textStyle)
@@ -326,7 +324,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                   styles.textInput,
                   {
                     color: item.textColor || "black",
-                    fontSize: 20, // Pertahankan ukuran font dasar
+                    fontSize: 14, // Pertahankan ukuran font dasar
                   },
                 ]}
                 value={item.text}
@@ -411,7 +409,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     fontSize: 20,
-    fontWeight: "bold",
     textAlign: "center",
     padding: 0,
     // minWidth: 100, // Sekarang diatur oleh MIN_WIDTH

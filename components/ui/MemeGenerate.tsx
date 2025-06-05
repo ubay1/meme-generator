@@ -1,13 +1,10 @@
 import { Colors } from "@/constants/Colors";
-import { useBottomSheet } from "@/context/BottomSheetContext";
 import { useEditorStore } from "@/stores/editor";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Canvas, Image, useImage } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import React, { useRef, useState } from "react";
 import {
-  Alert,
   Dimensions,
   Image as ImageRN,
   Keyboard,
@@ -38,98 +35,6 @@ const LearnSkia = () => {
     <>
       <ImageSkia />
     </>
-  );
-};
-
-const BottomSheetMainContent = () => {
-  const { close } = useBottomSheet();
-  const colorScheme = useColorScheme();
-
-  // Ambil actions dari store
-  const addTextEditor = useEditorStore((state) => state.addTextEditor);
-  const addImageEditor = useEditorStore((state) => state.addImageEditor);
-  const clearAllEditors = useEditorStore((state) => state.clearAllEditors);
-
-  const list: {
-    iconName: keyof typeof MaterialCommunityIcons.glyphMap;
-    label: string;
-    action: () => void;
-  }[] = [
-    {
-      iconName: "format-text",
-      label: "Teks",
-      action: () => {
-        addTextEditor();
-        close();
-      },
-    },
-    {
-      iconName: "image",
-      label: "Gambar",
-      action: () => {
-        addImageEditor();
-        close();
-      },
-    },
-    {
-      iconName: "trash-can",
-      label: "Hapus Semua",
-      action: () => {
-        Alert.alert(
-          "Konfirmasi",
-          "Apakah Anda yakin ingin menghapus semua item?",
-          [
-            {
-              text: "Batal",
-              style: "cancel",
-            },
-            {
-              text: "Hapus",
-              onPress: () => {
-                clearAllEditors();
-                close();
-              },
-              style: "destructive",
-            },
-          ]
-        );
-      },
-    },
-  ];
-
-  return (
-    <Animated.View>
-      <View
-        style={[
-          bottomSheetStyles.bottomSheetHeader,
-          {
-            borderBottomColor: Colors[colorScheme || "light"].border,
-          },
-        ]}
-      >
-        <ThemedText type="default">Pilihan</ThemedText>
-        <ThemedButtonIcon
-          iconName="close"
-          style={{ borderWidth: 0 }}
-          onPress={() => close()}
-        ></ThemedButtonIcon>
-      </View>
-      <View style={[bottomSheetStyles.bottomSheetContent]}>
-        {list.map((item) => (
-          <ThemedButtonIcon
-            key={item.label}
-            iconName={item.iconName}
-            label={item.label}
-            style={{
-              borderWidth: 0,
-              flexDirection: "row", // Gunakan 'flexDirection' bukan 'display' di React Native
-              gap: 8,
-            }}
-            onPress={item.action}
-          />
-        ))}
-      </View>
-    </Animated.View>
   );
 };
 
@@ -170,8 +75,8 @@ const ImageSkia = () => {
   const translationY2 = useSharedValue(initialOffset);
   const prevTranslationX2 = useSharedValue(0);
   const prevTranslationY2 = useSharedValue(0);
-  const scale2 = useSharedValue(1);
-  const startScale2 = useSharedValue(0);
+  // const scale2 = useSharedValue(1);
+  // const startScale2 = useSharedValue(0);
 
   const templatesMeme = [
     { id: 1, img: require("../../assets/images/template1.jpg") },
@@ -181,7 +86,6 @@ const ImageSkia = () => {
     { id: 5, img: require("../../assets/images/template5.jpg") },
     { id: 6, img: require("../../assets/images/template6.jpg") },
   ];
-  const [template, selectTemplate] = useState<string | any>("blank");
 
   const pan = Gesture.Pan()
     .onStart(() => {
@@ -233,26 +137,26 @@ const ImageSkia = () => {
       );
     })
     .runOnJS(true);
-  const pinch2 = Gesture.Pinch()
-    .onStart(() => {
-      startScale2.value = scale2.value;
-    })
-    .onUpdate((event) => {
-      scale2.value = clamp(
-        startScale2.value * event.scale,
-        0.5,
-        Math.min(width / 100, height / 100)
-      );
-      scale.value = clamp(
-        startScale.value * event.scale,
-        0.5,
-        Math.min(width / 100, height / 100)
-      );
-    })
-    .runOnJS(true);
+  // const pinch2 = Gesture.Pinch()
+  //   .onStart(() => {
+  //     startScale2.value = scale2.value;
+  //   })
+  //   .onUpdate((event) => {
+  //     scale2.value = clamp(
+  //       startScale2.value * event.scale,
+  //       0.5,
+  //       Math.min(width / 100, height / 100)
+  //     );
+  //     scale.value = clamp(
+  //       startScale.value * event.scale,
+  //       0.5,
+  //       Math.min(width / 100, height / 100)
+  //     );
+  //   })
+  //   .runOnJS(true);
 
   const composedGestures = Gesture.Simultaneous(pan, pinch);
-  const composedGestures2 = Gesture.Simultaneous(pan2, pinch2);
+  // const composedGestures2 = Gesture.Simultaneous(pan2, pinch2);
 
   const composeStyle = useAnimatedStyle(() => {
     return {
@@ -263,23 +167,23 @@ const ImageSkia = () => {
       ],
     };
   });
-  const composeStyle2 = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translationX2.value },
-        { translateY: translationY2.value },
-        { scale: scale2.value },
-      ],
-    };
-  });
-  const panStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translationX.value },
-        { translateY: translationY.value },
-      ],
-    };
-  });
+  // const composeStyle2 = useAnimatedStyle(() => {
+  //   return {
+  //     transform: [
+  //       { translateX: translationX2.value },
+  //       { translateY: translationY2.value },
+  //       { scale: scale2.value },
+  //     ],
+  //   };
+  // });
+  // const panStyle = useAnimatedStyle(() => {
+  //   return {
+  //     transform: [
+  //       { translateX: translationX.value },
+  //       { translateY: translationY.value },
+  //     ],
+  //   };
+  // });
   const panStyle2 = useAnimatedStyle(() => {
     return {
       transform: [
@@ -288,11 +192,11 @@ const ImageSkia = () => {
       ],
     };
   });
-  const pinchStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  // const pinchStyle = useAnimatedStyle(() => {
+  //   return {
+  //     transform: [{ scale: scale.value }],
+  //   };
+  // });
 
   const downloadViewAsImage = async () => {
     try {
@@ -313,10 +217,8 @@ const ImageSkia = () => {
     }
   };
 
-  const items = useEditorStore((state) => state.items); // Ganti 'texts' menjadi 'items'
+  const items = useEditorStore((state) => state.items);
   const addTextEditor = useEditorStore((state) => state.addTextEditor);
-  const addImageEditor = useEditorStore((state) => state.addImageEditor);
-  const clearAllEditors = useEditorStore((state) => state.clearAllEditors);
   const focusedItemId = useEditorStore((state) => state.focusedItemId);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
   const handleOutsidePress = () => {
@@ -333,7 +235,6 @@ const ImageSkia = () => {
           <View style={{ display: "flex", flexDirection: "row", gap: 8 }}>
             <TouchableOpacity
               onPress={() => {
-                selectTemplate("blank");
                 setImageUri("");
               }}
             >
@@ -360,7 +261,6 @@ const ImageSkia = () => {
               <TouchableOpacity
                 key={template.id}
                 onPress={() => {
-                  selectTemplate(template.img);
                   setImageUri(template.img);
                 }}
               >
@@ -453,20 +353,5 @@ const ImageSkia = () => {
     </>
   );
 };
-
-const bottomSheetStyles = StyleSheet.create({
-  bottomSheetHeader: {
-    padding: 16,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  bottomSheetContent: {
-    padding: 16,
-    display: "flex",
-    gap: 14,
-  },
-});
 
 export default LearnSkia;
