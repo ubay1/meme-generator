@@ -73,7 +73,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const newImageItem: EditorItem = {
         id: newId,
         type: 'image',
-        imageUrl: 'https://picsum.photos/200/300',
+        imageUrl: 'https://picsum.photos/200/200?random=1',
         x: (width / 2) - (defaultImageWidth / 2),
         y: (height / 2) - (defaultImageHeight / 2),
         width: defaultImageWidth, // <<-- GUNAKAN INI

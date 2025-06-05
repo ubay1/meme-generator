@@ -27,6 +27,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
+import Svg, { ClipPath, Defs, Rect } from "react-native-svg";
 
 function clamp(val: number, min: number, max: number) {
   return Math.min(Math.max(val, min), max);
@@ -266,19 +267,43 @@ export default function CreateMeme() {
                 alt="image"
               />
             ) : (
-              <Animated.View
-                style={[
-                  composeStyle,
-                  {
-                    width: 200,
-                    height: 200,
-                    backgroundColor: "#fff",
-                    borderColor: Colors[colorScheme || "light"].border,
-                    borderWidth: 1,
-                    borderRadius: 0,
-                  },
-                ]}
-              ></Animated.View>
+              <Animated.View style={composeStyle}>
+                <Svg width={200} height={200}>
+                  <Defs>
+                    <ClipPath id="clip">
+                      <Rect width="100%" height="100%" />
+                    </ClipPath>
+                  </Defs>
+
+                  {/* Background rectangle */}
+                  <Rect
+                    width="100%"
+                    height="100%"
+                    fill="#fff"
+                    stroke={Colors[colorScheme || "light"].border}
+                    strokeWidth="1"
+                  />
+
+                  {/* Area untuk menampung teks dengan clip path */}
+                  {/* <ForeignObject
+                    x="0"
+                    y="0"
+                    width="100%"
+                    height="100%"
+                    // clipPath="url(#clip)"
+                  >
+                    <View style={{ width: "100%", height: "100%" }}>
+                      {items.map((item) => (
+                        <DraggableEditor
+                          key={item.id}
+                          item={item}
+                          isFocused={focusedItemId === item.id}
+                        />
+                      ))}
+                    </View>
+                  </ForeignObject> */}
+                </Svg>
+              </Animated.View>
             )}
           </GestureDetector>
           <TouchableWithoutFeedback onPress={handleOutsidePress}>

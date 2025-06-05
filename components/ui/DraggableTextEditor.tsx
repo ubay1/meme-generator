@@ -1,10 +1,17 @@
+import { EditorItem, useEditorStore } from "@/stores/editor";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Canvas,
+  Paragraph as ParagrafSkia,
+  Skia,
+  TextAlign,
+  useFont,
+} from "@shopify/react-native-skia";
 import React, { useEffect, useState } from "react";
 import {
   Image,
   Keyboard,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -16,8 +23,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-
-import { EditorItem, useEditorStore } from "@/stores/editor";
 
 const MIN_HEIGHT = 50;
 const MIN_WIDTH = 50; // Ubah menjadi 50 agar lebih fleksibel untuk teks juga
@@ -36,6 +41,9 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
   );
   const updateItemSize = useEditorStore((state) => state.updateItemSize);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+
+  // const [imageUri, setImageUri] = useState("");
+  // const image = useImage(imageUri || "");
 
   // Inisialisasi useSharedValue dengan state dari item
   const translateX = useSharedValue(item.x);
@@ -259,6 +267,51 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
     Keyboard.dismiss();
   };
 
+  // const font = useFont(require("../../assets/fonts/SpaceMono-Regular.ttf"), 12);
+
+  const fontBario = useFont(
+    require("../../assets/fonts/Barrio-Regular.ttf"),
+    12
+  );
+  const fontEduSa = useFont(
+    require("../../assets/fonts/EduSAHand-Medium.ttf"),
+    12
+  );
+  const fontInter = useFont(
+    require("../../assets/fonts/Inter_18pt-Medium.ttf"),
+    12
+  );
+  const fontMontserat = useFont(
+    require("../../assets/fonts/Montserrat-Medium.ttf"),
+    12
+  );
+  const fontRobotoCondesed = useFont(
+    require("../../assets/fonts/Roboto_Condensed-Regular.ttf"),
+    12
+  );
+  const fontRobotoSlab = useFont(
+    require("../../assets/fonts/RobotoSlab-Medium.ttf"),
+    12
+  );
+  const fontDefault = [fontRobotoSlab];
+
+  const paragraph = (text: string) => {
+    // Are the font loaded already?
+
+    const paragraphStyle = {
+      textAlign: TextAlign.Center,
+    };
+    const textStyle = {
+      color: Skia.Color("black"),
+      fontFamilies: ["sans-serif"],
+      fontSize: 20,
+    };
+    return Skia.ParagraphBuilder.Make(paragraphStyle)
+      .pushStyle(textStyle)
+      .addText(text)
+      .build();
+  };
+
   return (
     <GestureDetector gesture={composedGestures}>
       <Animated.View style={[styles.dragArea, animatedStyle]}>
@@ -270,34 +323,35 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                   styles.textInput,
                   {
                     color: item.textColor || "black",
-                    // Ukuran font tidak dikompensasi skala di sini, karena currentWidth/Height
-                    // sudah mengendalikan ukuran kotak. Scale global untuk item.
                     fontSize: 20, // Pertahankan ukuran font dasar
                   },
                 ]}
                 value={item.text}
                 onChangeText={handleTextChange}
                 onBlur={handleBlurTextInput}
-                // autoFocus // Jangan gunakan autoFocus di sini, akan ada masalah dengan keyboard
                 multiline
               />
             ) : (
-              <Text
-                style={[
-                  styles.text,
-                  {
-                    color: item.textColor || "black",
-                    // Ukuran font tidak dikompensasi skala di sini.
-                    fontSize: 20, // Pertahankan ukuran font dasar
-                  },
-                ]}
+              <TouchableOpacity
                 onPress={() => {
                   setFocusedItem(item.id);
                   setIsEditing(true);
                 }}
               >
-                {item.text ?? "Hello"}
-              </Text>
+                <Canvas
+                  style={{
+                    width: item.width,
+                    height: 140,
+                  }}
+                >
+                  <ParagrafSkia
+                    x={10}
+                    y={50}
+                    width={item.width - 20}
+                    paragraph={paragraph(item.text ?? "Hello")}
+                  ></ParagrafSkia>
+                </Canvas>
+              </TouchableOpacity>
             )
           ) : (
             <Image
@@ -323,20 +377,6 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
             <TouchableOpacity style={styles.copyButton} onPress={handleCopy}>
               <FontAwesome5 name="copy" size={24} color="black" />
             </TouchableOpacity>
-            {/* Resizing handles */}
-            {/* <GestureDetector gesture={topLeftResizeGesture}>
-              <Animated.View style={styles.resizeHandleTopLeft} />
-            </GestureDetector> */}
-            {/* <View style={styles.resizeHandleTopCenter} /> */}
-            {/* Dihapus sementara */}
-            {/* <GestureDetector gesture={topRightResizeGesture}>
-              <Animated.View style={styles.resizeHandleTopRight} />
-            </GestureDetector> */}
-            {/* <GestureDetector gesture={bottomLeftResizeGesture}>
-              <Animated.View style={styles.resizeHandleBottomLeft} />
-            </GestureDetector> */}
-            {/* <View style={styles.resizeHandleBottomCenter} /> */}
-            {/* Dihapus sementara */}
             <GestureDetector gesture={bottomRightResizeGesture}>
               <Animated.View style={styles.resizeHandleBottomRight} />
             </GestureDetector>

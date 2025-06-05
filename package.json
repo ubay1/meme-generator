@@ -37,7 +37,13 @@
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.5",
+    "react-native-svg": "15.11.2",
+    "expo-image-picker": "~16.1.4",
+    "@shopify/react-native-skia": "v2.0.0-next.4",
+    "expo-file-system": "~18.1.10",
+    "react-native-view-shot": "4.0.3",
+    "expo-media-library": "~17.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
