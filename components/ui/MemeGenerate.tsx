@@ -344,6 +344,7 @@ const ImageSkia = () => {
         }}
       >
         <ThemedButtonIcon iconName="image" onPress={pickImage} />
+        {focusedItemId !== null && <ThemedButtonIcon iconName="creation" />}
         <ThemedButtonIcon iconName="format-text" onPress={addTextEditor} />
         <ThemedButtonIcon
           iconName="download-circle-outline"
