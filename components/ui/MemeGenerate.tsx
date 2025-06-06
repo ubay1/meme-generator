@@ -52,7 +52,6 @@ type IPropsTextStyle = {
   id: string;
 };
 const TextStylesSheet = ({ id }: IPropsTextStyle) => {
-  // const { close } = useBottomSheet();
   const colorScheme = useColorScheme();
   const items = useEditorStore(
     (state) => state.items.filter((item) => item.id === id)[0]
@@ -63,17 +62,7 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
   const [localFontSize, setLocalFontSize] = useState(
     items.styles?.fontSize || 12
   );
-  // const [localFontName, setLocalFontName] = useState(
-  //   items.styles?.font?.[0] || "SpaceMono"
-  // );
-  // useEffect(() => {
-  //   // if (items.styles?.font !== undefined) {
-  //   setLocalFontName(items.styles?.font?.[0] as string);
-  //   // }
-  // }, [items.styles?.font]);
 
-  // Effect to synchronize local state with store when 'items' changes (e.g., if another component updates it)
-  // This is crucial to ensure the slider reflects the correct initial value or external changes.
   useEffect(() => {
     if (items.styles?.fontSize !== undefined) {
       setLocalFontSize(items.styles.fontSize);
@@ -94,6 +83,10 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
     {
       color: "black",
       colorSkia: Skia.Color("black"),
+    },
+    {
+      color: "white",
+      colorSkia: Skia.Color("white"),
     },
     {
       color: "red",
@@ -485,6 +478,30 @@ const ImageSkia = () => {
                 <ThemedText type="default">Blank</ThemedText>
               </View>
             </TouchableOpacity>
+            <TouchableOpacity onPress={pickImage}>
+              <View
+                style={{
+                  height: 100,
+                  width: 100,
+                  paddingHorizontal: 10,
+                  backgroundColor:
+                    Colors[useColorScheme() || "light"].background2,
+                  borderStyle: "dashed",
+                  borderWidth: 2,
+                  borderColor: Colors[useColorScheme() || "light"].text2,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ImageRN
+                  source={require("../../assets/images/gallery.png")}
+                  width={20}
+                  height={20}
+                  style={{ width: 40, height: 40 }}
+                />
+                <ThemedText type="default">Gallery</ThemedText>
+              </View>
+            </TouchableOpacity>
             {templatesMeme.map((template) => (
               <TouchableOpacity
                 key={template.id}
@@ -571,7 +588,6 @@ const ImageSkia = () => {
           gap: 8,
         }}
       >
-        <ThemedButtonIcon iconName="image" onPress={pickImage} />
         {focusedItemId !== null && (
           <ThemedButtonIcon
             iconName="creation"
