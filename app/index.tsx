@@ -1,12 +1,13 @@
 import { StyleSheet } from "react-native";
 
-import LearnSkia from "@/components/ui/MemeGenerate";
+import MemeGenerate2 from "@/components/ui/MemeGenerate2";
 import { ThemedView } from "@/components/ui/ThemedView";
 
 export default function HomeScreen() {
   return (
     <ThemedView style={styles.titleContainer}>
-      <LearnSkia />
+      {/* <LearnSkia /> */}
+      <MemeGenerate2 />
     </ThemedView>
   );
 }
