@@ -12,7 +12,7 @@ import {
 } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image as ImageRN,
@@ -31,7 +31,6 @@ import {
 } from "react-native-gesture-handler";
 import Animated, {
   clamp,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
@@ -395,18 +394,18 @@ const ImageSkia = () => {
   //     );
   //   })
   //   .runOnJS(true);
-  const clearFocus = useCallback(() => {
-    setFocusedItem(null);
-    Keyboard.dismiss(); // Keyboard.dismiss is generally safe to call directly
-  }, [setFocusedItem]); // Depend on setFocusedItem
+  // const clearFocus = useCallback(() => {
+  //   setFocusedItem(null);
+  //   Keyboard.dismiss(); // Keyboard.dismiss is generally safe to call directly
+  // }, [setFocusedItem]); // Depend on setFocusedItem
 
-  const canvasTapGesture = Gesture.Tap().onEnd(() => {
-    if (focusedItemId !== null) {
-      runOnJS(clearFocus)(); // Call the wrapped function
-    }
-  });
+  // const canvasTapGesture = Gesture.Tap().onEnd(() => {
+  //   if (focusedItemId !== null) {
+  //     runOnJS(clearFocus)(); // Call the wrapped function
+  //   }
+  // });
 
-  const composedGestures = Gesture.Simultaneous(pan, pinch, canvasTapGesture);
+  const composedGestures = Gesture.Simultaneous(pan, pinch);
   // const composedGestures2 = Gesture.Simultaneous(pan2, pinch2);
 
   const composeStyle = useAnimatedStyle(() => {
@@ -557,7 +556,17 @@ const ImageSkia = () => {
                     />
                   </Canvas>
                 ) : (
-                  <View></View>
+                  <Canvas
+                    style={[
+                      {
+                        flex: 1,
+                        // backgroundColor: "red",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      },
+                    ]}
+                  ></Canvas>
                 )}
 
                 <TouchableWithoutFeedback onPress={() => handleOutsidePress()}>

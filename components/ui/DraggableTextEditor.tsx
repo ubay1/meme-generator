@@ -294,7 +294,6 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
       fontSize: item.styles?.fontSize || 14,
     };
 
-    console.log("textStyle", textStyle);
     const builder = Skia.ParagraphBuilder.Make(paragraphStyle, fontMgr)
       .pushStyle(textStyle)
       .addText(text);
@@ -346,7 +345,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                       <ParagrafSkia
                         x={0}
                         y={0}
-                        width={item.width - 20}
+                        width={item.width}
                         paragraph={p}
                       ></ParagrafSkia>
                     </Canvas>
