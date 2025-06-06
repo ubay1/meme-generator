@@ -1,9 +1,11 @@
 import { Colors } from "@/constants/Colors";
+import { useBottomSheet } from "@/context/BottomSheetContext";
+import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
 import { Canvas, Image, useImage } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   Dimensions,
   Image as ImageRN,
@@ -22,6 +24,7 @@ import {
 } from "react-native-gesture-handler";
 import Animated, {
   clamp,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
@@ -38,30 +41,102 @@ const LearnSkia = () => {
   );
 };
 
+const TextStylesSheet = () => {
+  const { close } = useBottomSheet();
+  const colorScheme = useColorScheme();
+
+  const listFont: { label: string; fontName: FontName }[] = [
+    { label: "Barrio", fontName: "Barrio" },
+    { label: "EduSAHand", fontName: "EduSAHand" },
+    { label: "Inter", fontName: "Inter" },
+    { label: "Montserrat", fontName: "Montserrat" },
+    { label: "RobotoCondensed", fontName: "RobotoCondensed" },
+    { label: "RobotoSlab", fontName: "RobotoSlab" },
+    { label: "SpaceMono", fontName: "SpaceMono" },
+  ];
+
+  return (
+    <View style={{ padding: 10 }}>
+      <View
+        style={{
+          marginVertical: 10,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ThemedText type="subtitle">Text styles</ThemedText>
+      </View>
+
+      <View
+        style={{
+          marginHorizontal: 10,
+          flexDirection: "column",
+          gap: 4,
+          marginTop: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: Colors[colorScheme || "light"].border,
+          paddingBottom: 10,
+        }}
+      >
+        <ThemedText type="defaultSemiBold">Font</ThemedText>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {listFont.map((font) => (
+            <TouchableOpacity key={font.label}>
+              <ThemedText
+                type="default"
+                style={{ fontSize: 12, fontFamily: font.fontName }}
+              >
+                {font.label}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+};
+
 const ImageSkia = () => {
   const [imageUri, setImageUri] = useState("");
   const image = useImage(imageUri || "");
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
+      mediaTypes: ["images"],
       // allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(result);
+    // console.log(result);
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
 
+  const { open } = useBottomSheet();
   const viewRef = useRef(null);
+
+  const items = useEditorStore((state) => state.items);
+  const addTextEditor = useEditorStore((state) => state.addTextEditor);
+  const focusedItemId = useEditorStore((state) => state.focusedItemId);
+  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  const handleOutsidePress = () => {
+    setFocusedItem(null); // Hapus fokus dari semua komponen editor
+    Keyboard.dismiss(); // Tutup keyboard
+  };
 
   const { width, height } = Dimensions.get("screen");
   const CONTAINER_SIZE = width - 100;
-  const CANVAS_SIZE = 100;
+  const CANVAS_SIZE = 100; // max 260
   const maxTranslateX = CONTAINER_SIZE - CANVAS_SIZE;
   const maxTranslateY = CONTAINER_SIZE - CANVAS_SIZE;
   const initialOffset = (CONTAINER_SIZE - CANVAS_SIZE) / 2;
@@ -88,19 +163,23 @@ const ImageSkia = () => {
   ];
 
   const pan = Gesture.Pan()
+    // .minDistance(1)
     .onStart(() => {
       prevTranslationX.value = translationX.value;
       prevTranslationY.value = translationY.value;
     })
     .onUpdate((event) => {
+      const maxTranslateX = width / 2 - 110;
+      const maxTranslateY = height / 2 - 150;
+
       translationX.value = clamp(
         prevTranslationX.value + event.translationX,
-        0,
+        -maxTranslateX,
         maxTranslateX
       );
       translationY.value = clamp(
         prevTranslationY.value + event.translationY,
-        0,
+        -maxTranslateY,
         maxTranslateY
       );
     })
@@ -154,8 +233,18 @@ const ImageSkia = () => {
   //     );
   //   })
   //   .runOnJS(true);
+  const clearFocus = useCallback(() => {
+    setFocusedItem(null);
+    Keyboard.dismiss(); // Keyboard.dismiss is generally safe to call directly
+  }, [setFocusedItem]); // Depend on setFocusedItem
 
-  const composedGestures = Gesture.Simultaneous(pan, pinch);
+  const canvasTapGesture = Gesture.Tap().onEnd(() => {
+    if (focusedItemId !== null) {
+      runOnJS(clearFocus)(); // Call the wrapped function
+    }
+  });
+
+  const composedGestures = Gesture.Simultaneous(pan, pinch, canvasTapGesture);
   // const composedGestures2 = Gesture.Simultaneous(pan2, pinch2);
 
   const composeStyle = useAnimatedStyle(() => {
@@ -167,23 +256,7 @@ const ImageSkia = () => {
       ],
     };
   });
-  // const composeStyle2 = useAnimatedStyle(() => {
-  //   return {
-  //     transform: [
-  //       { translateX: translationX2.value },
-  //       { translateY: translationY2.value },
-  //       { scale: scale2.value },
-  //     ],
-  //   };
-  // });
-  // const panStyle = useAnimatedStyle(() => {
-  //   return {
-  //     transform: [
-  //       { translateX: translationX.value },
-  //       { translateY: translationY.value },
-  //     ],
-  //   };
-  // });
+
   const panStyle2 = useAnimatedStyle(() => {
     return {
       transform: [
@@ -192,11 +265,6 @@ const ImageSkia = () => {
       ],
     };
   });
-  // const pinchStyle = useAnimatedStyle(() => {
-  //   return {
-  //     transform: [{ scale: scale.value }],
-  //   };
-  // });
 
   const downloadViewAsImage = async () => {
     try {
@@ -215,15 +283,6 @@ const ImageSkia = () => {
     } catch (err) {
       console.error("Capture failed:", err);
     }
-  };
-
-  const items = useEditorStore((state) => state.items);
-  const addTextEditor = useEditorStore((state) => state.addTextEditor);
-  const focusedItemId = useEditorStore((state) => state.focusedItemId);
-  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
-  const handleOutsidePress = () => {
-    setFocusedItem(null); // Hapus fokus dari semua komponen editor
-    Keyboard.dismiss(); // Tutup keyboard
   };
 
   return (
@@ -281,7 +340,7 @@ const ImageSkia = () => {
             style={[
               composeStyle,
               {
-                width: width,
+                width: width, // next bisa diatur lebar & tinggi canvasnya
                 height: width,
                 backgroundColor: "white",
               },
@@ -344,7 +403,12 @@ const ImageSkia = () => {
         }}
       >
         <ThemedButtonIcon iconName="image" onPress={pickImage} />
-        {focusedItemId !== null && <ThemedButtonIcon iconName="creation" />}
+        {focusedItemId !== null && (
+          <ThemedButtonIcon
+            iconName="creation"
+            onPress={() => open(<TextStylesSheet />)}
+          />
+        )}
         <ThemedButtonIcon iconName="format-text" onPress={addTextEditor} />
         <ThemedButtonIcon
           iconName="download-circle-outline"

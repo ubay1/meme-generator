@@ -1,8 +1,9 @@
-import { EditorItem, useEditorStore } from "@/stores/editor";
+import { EditorItem, TextStyles, useEditorStore } from "@/stores/editor";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import {
   Canvas,
   Paragraph as ParagrafSkia,
+  SkColor,
   Skia,
   TextAlign,
 } from "@shopify/react-native-skia";
@@ -266,42 +267,19 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
     Keyboard.dismiss();
   };
 
-  // const font = useFont(require("../../assets/fonts/SpaceMono-Regular.ttf"), 12);
-  // const fontBario = useFont(
-  //   require("../../assets/fonts/Barrio-Regular.ttf"),
-  //   12
-  // );
-  // const fontEduSa = useFont(
-  //   require("../../assets/fonts/EduSAHand-Medium.ttf"),
-  //   12
-  // );
-  // const fontInter = useFont(
-  //   require("../../assets/fonts/Inter_18pt-Medium.ttf"),
-  //   12
-  // );
-  // const fontMontserat = useFont(
-  //   require("../../assets/fonts/Montserrat-Medium.ttf"),
-  //   12
-  // );
-  // const fontRobotoCondesed = useFont(
-  //   require("../../assets/fonts/Roboto_Condensed-Regular.ttf"),
-  //   12
-  // );
-  // const fontRobotoSlab = useFont(
-  //   require("../../assets/fonts/RobotoSlab-Medium.ttf"),
-  //   12
-  // );
-  // const fontDefault = [fontRobotoSlab];
-
-  const createParagraph = (text: string, width: number) => {
+  const createParagraph = (
+    text: string,
+    width: number,
+    textStyles?: TextStyles
+  ) => {
     // Are the font loaded already?
     const paragraphStyle = {
       textAlign: TextAlign.Center,
     };
     const textStyle = {
-      color: Skia.Color("black"),
-      fontFamilies: ["sans-serif"],
-      fontSize: 14,
+      color: (textStyles?.color as SkColor) || Skia.Color("#000"),
+      fontFamilies: (textStyles?.font as string[]) || ["sans-serif"],
+      fontSize: textStyles?.fontSize || 14,
     };
     const builder = Skia.ParagraphBuilder.Make(paragraphStyle)
       .pushStyle(textStyle)
@@ -371,7 +349,8 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
 
         {isFocused && (
           <>
-            <TouchableOpacity style={styles.moveButton} onPress={handleDelete}>
+            {/* Move Button */}
+            <TouchableOpacity style={styles.moveButton}>
               <Feather name="move" size={24} color="black" />
             </TouchableOpacity>
             {/* Delete Button */}

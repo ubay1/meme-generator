@@ -1,7 +1,13 @@
 // @/stores/editor.ts
+import { SkColor } from '@shopify/react-native-skia';
 import { Dimensions } from 'react-native';
 import { create } from 'zustand';
 
+export type TextStyles = {
+  color: SkColor;
+  font?: string[];
+  fontSize?: number;
+}
 export type EditorItem = {
   id: string;
   type: 'text' | 'image';
@@ -14,6 +20,7 @@ export type EditorItem = {
   // Properti spesifik teks
   text?: string;
   textColor?: string;
+  styles?: TextStyles;
   // Properti spesifik gambar
   imageUrl?: string;
   imageWidth?: number; // Bisa dihapus jika width/height sudah ada
@@ -56,6 +63,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         rotation: 0,
         width: defaultWidth, // <<-- GUNAKAN INI
         height: defaultHeight, // <<-- GUNAKAN INI
+        styles: {
+          color: SkiaApi.Color('#000'),
+          font: ['SpaceMono'],
+          fontSize: 14,
+        }
       };
       return {
         items: [...state.items, newTextItem],
@@ -74,8 +86,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         id: newId,
         type: 'image',
         imageUrl: 'https://picsum.photos/200/200?random=1',
-        x: (width / 2) - (defaultImageWidth / 2),
-        y: (height / 2) - (defaultImageHeight / 2),
+        x: -100,
+        y: -100,
         width: defaultImageWidth, // <<-- GUNAKAN INI
         height: defaultImageHeight, // <<-- GUNAKAN INI
         scale: 1,

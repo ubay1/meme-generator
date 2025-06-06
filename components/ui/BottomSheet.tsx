@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   sheet: {
     width: "100%",
     position: "absolute",
-    bottom: 0,
+    bottom: 40,
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     zIndex: 2,
