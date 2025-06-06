@@ -20,7 +20,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   useColorScheme,
   View,
 } from "react-native";
@@ -29,6 +28,7 @@ import {
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
+import OutsidePressHandler from "react-native-outside-press";
 import Animated, {
   clamp,
   useAnimatedStyle,
@@ -219,7 +219,7 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
           styleBottomSheet.container,
           {
             paddingBottom: 30,
-            borderBottomColor: Colors[colorScheme || "light"].border,
+            borderBottomWidth: 0,
           },
         ]}
       >
@@ -229,8 +229,8 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
           minimumValue={8}
           value={items.styles?.fontSize || 12}
           maximumValue={40}
-          minimumTrackTintColor="#FFFFFF"
-          maximumTrackTintColor="#000000"
+          minimumTrackTintColor="#cdcdcd"
+          maximumTrackTintColor="#bbb"
           step={1}
           onValueChange={(value) => {
             setLocalFontSize(value);
@@ -421,8 +421,8 @@ const ImageSkia = () => {
   const panStyle2 = useAnimatedStyle(() => {
     return {
       transform: [
-        { translateX: translationX2.value },
-        { translateY: translationY2.value },
+        { translateX: translationX2.value - 15 },
+        { translateY: translationY2.value - 20 },
       ],
     };
   });
@@ -556,20 +556,16 @@ const ImageSkia = () => {
                     />
                   </Canvas>
                 ) : (
-                  <Canvas
-                    style={[
-                      {
-                        flex: 1,
-                        // backgroundColor: "red",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      },
-                    ]}
-                  ></Canvas>
+                  <View></View>
                 )}
 
-                <TouchableWithoutFeedback onPress={() => handleOutsidePress()}>
+                <OutsidePressHandler
+                  onOutsidePress={() => {
+                    setTimeout(() => {
+                      handleOutsidePress();
+                    }, 100);
+                  }}
+                >
                   <View style={StyleSheet.absoluteFillObject}>
                     {items.map((item) => (
                       <DraggableEditor
@@ -579,7 +575,7 @@ const ImageSkia = () => {
                       />
                     ))}
                   </View>
-                </TouchableWithoutFeedback>
+                </OutsidePressHandler>
               </Animated.View>
             </GestureDetector>
           </Animated.View>
@@ -603,7 +599,15 @@ const ImageSkia = () => {
             onPress={() => open(<TextStylesSheet id={focusedItemId} />)}
           />
         )}
-        <ThemedButtonIcon iconName="format-text" onPress={addTextEditor} />
+        <ThemedButtonIcon
+          iconName="format-text"
+          onPress={() =>
+            addTextEditor(
+              translationX2.value - 15,
+              imageUri !== "" ? translationY2.value - 250 : translationY2.value
+            )
+          }
+        />
         <ThemedButtonIcon
           iconName="download-circle-outline"
           onPress={downloadViewAsImage}

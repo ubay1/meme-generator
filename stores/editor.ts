@@ -1,6 +1,5 @@
 // @/stores/editor.ts
 import { SkColor, Skia } from '@shopify/react-native-skia';
-import { Dimensions } from 'react-native';
 import { create } from 'zustand';
 
 export type TextStyles = {
@@ -32,7 +31,7 @@ interface EditorState {
   items: EditorItem[];
   focusedItemId: string | null;
   nextId: number;
-  addTextEditor: () => void;
+  addTextEditor: (x: number, y: number) => void;
   addImageEditor: () => void;
   deleteEditor: (id: string) => void;
   copyEditor: (id: string) => void;
@@ -49,7 +48,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   focusedItemId: null,
   nextId: 1,
 
-  addTextEditor: () => {
+  addTextEditor: (x: number, y: number) => {
     set((state) => {
       const newId = state.nextId.toString();
       const defaultWidth = 150; // Lebar default untuk teks
@@ -58,8 +57,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         id: newId,
         type: 'text',
         text: 'Ketuk untuk edit',
-        x: (width / 2) - (defaultWidth / 2), // Posisikan di tengah awal kanvas
-        y: (height / 2) - (defaultHeight / 2),
+        x: x, // Posisikan di tengah awal kanvas
+        y: y,
         textColor: 'black',
         scale: 1,
         rotation: 0,
@@ -187,4 +186,4 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 }));
 
-const { width, height } = Dimensions.get("window");
+// const { width, height } = Dimensions.get("window");

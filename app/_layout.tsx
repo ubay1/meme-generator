@@ -10,6 +10,7 @@ import {
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { EventProvider } from "react-native-outside-press";
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,18 +31,20 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <BottomSheetProvider>
-        <SafeAreaView
-          style={{
-            flex: 1,
-            backgroundColor: Colors[colorScheme || "light"].background2,
-          }}
-        >
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </SafeAreaView>
+        <EventProvider>
+          <SafeAreaView
+            style={{
+              flex: 1,
+              backgroundColor: Colors[colorScheme || "light"].background2,
+            }}
+          >
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </SafeAreaView>
+        </EventProvider>
       </BottomSheetProvider>
     </ThemeProvider>
   );
