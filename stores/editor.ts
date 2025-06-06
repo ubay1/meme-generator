@@ -1,10 +1,11 @@
 // @/stores/editor.ts
-import { SkColor } from '@shopify/react-native-skia';
+import { SkColor, Skia } from '@shopify/react-native-skia';
 import { Dimensions } from 'react-native';
 import { create } from 'zustand';
 
 export type TextStyles = {
   color: SkColor;
+  colorRaw?: string;
   font?: string[];
   fontSize?: number;
 }
@@ -36,6 +37,7 @@ interface EditorState {
   deleteEditor: (id: string) => void;
   copyEditor: (id: string) => void;
   updateTextContent: (id: string, newText: string) => void;
+  updateTextStyle: (id: string, data: TextStyles) => void;
   updateItemTransform: (id: string, newX: number, newY: number, newScale: number, newRotation: number) => void;
   updateItemSize: (id: string, newWidth: number, newHeight: number, newX: number, newY: number) => void; // <<-- AKSI BARU
   setFocusedItem: (id: string | null) => void;
@@ -64,7 +66,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         width: defaultWidth, // <<-- GUNAKAN INI
         height: defaultHeight, // <<-- GUNAKAN INI
         styles: {
-          color: SkiaApi.Color('#000'),
+          color: Skia.Color('black'),
+          colorRaw: 'black', // Tambahkan ini untuk warna asli Skia, jika ada
           font: ['SpaceMono'],
           fontSize: 14,
         }
@@ -75,6 +78,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         focusedItemId: newId,
       };
     });
+  },
+
+  updateTextStyle: (id: string, data: TextStyles) => {
+    set((state) => {
+      const focusedItem = state.items.find(item => item.id === id);
+      if (!focusedItem) return state;
+
+      const updatedItems = state.items.map(item =>
+        item.id === id ? { ...item, styles: data } : item
+      );
+
+      return {
+        ...state,
+        items: updatedItems
+      };
+    })
   },
 
   addImageEditor: () => {

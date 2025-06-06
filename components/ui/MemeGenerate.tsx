@@ -2,10 +2,17 @@ import { Colors } from "@/constants/Colors";
 import { useBottomSheet } from "@/context/BottomSheetContext";
 import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
-import { Canvas, Image, useImage } from "@shopify/react-native-skia";
+import Slider from "@react-native-community/slider";
+import {
+  Canvas,
+  Image,
+  SkColor,
+  Skia,
+  useImage,
+} from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image as ImageRN,
@@ -41,9 +48,37 @@ const LearnSkia = () => {
   );
 };
 
-const TextStylesSheet = () => {
-  const { close } = useBottomSheet();
+type IPropsTextStyle = {
+  id: string;
+};
+const TextStylesSheet = ({ id }: IPropsTextStyle) => {
+  // const { close } = useBottomSheet();
   const colorScheme = useColorScheme();
+  const items = useEditorStore(
+    (state) => state.items.filter((item) => item.id === id)[0]
+  );
+  const updateTextStyle = useEditorStore((state) => state.updateTextStyle);
+
+  // Initialize local state for font size
+  const [localFontSize, setLocalFontSize] = useState(
+    items.styles?.fontSize || 12
+  );
+  // const [localFontName, setLocalFontName] = useState(
+  //   items.styles?.font?.[0] || "SpaceMono"
+  // );
+  // useEffect(() => {
+  //   // if (items.styles?.font !== undefined) {
+  //   setLocalFontName(items.styles?.font?.[0] as string);
+  //   // }
+  // }, [items.styles?.font]);
+
+  // Effect to synchronize local state with store when 'items' changes (e.g., if another component updates it)
+  // This is crucial to ensure the slider reflects the correct initial value or external changes.
+  useEffect(() => {
+    if (items.styles?.fontSize !== undefined) {
+      setLocalFontSize(items.styles.fontSize);
+    }
+  }, [items.styles?.fontSize]);
 
   const listFont: { label: string; fontName: FontName }[] = [
     { label: "Barrio", fontName: "Barrio" },
@@ -55,8 +90,55 @@ const TextStylesSheet = () => {
     { label: "SpaceMono", fontName: "SpaceMono" },
   ];
 
+  const listColor = [
+    {
+      color: "black",
+      colorSkia: Skia.Color("black"),
+    },
+    {
+      color: "red",
+      colorSkia: Skia.Color("red"),
+    },
+    {
+      color: "yellow",
+      colorSkia: Skia.Color("yellow"),
+    },
+    {
+      color: "green",
+      colorSkia: Skia.Color("green"),
+    },
+    {
+      color: "blue",
+      colorSkia: Skia.Color("blue"),
+    },
+    {
+      color: "orange",
+      colorSkia: Skia.Color("orange"),
+    },
+  ];
+
+  // Helper function to update font styles in the store
+  const handleUpdateFont = (fontName: FontName) => {
+    updateTextStyle(items.id, {
+      ...items.styles,
+      font: [fontName], // Assuming font is an array of strings
+      color: items.styles?.color || Skia.Color("black"), // Keep existing color or default
+      fontSize: localFontSize, // Use the current local font size
+    });
+  };
+
+  // Helper function to update color styles in the store
+  const handleUpdateColor = (colorSkia: SkColor, colorRaw: string) => {
+    updateTextStyle(items.id, {
+      ...items.styles,
+      color: colorSkia,
+      colorRaw: colorRaw,
+      fontSize: localFontSize, // Use the current local font size
+    });
+  };
+
   return (
-    <View style={{ padding: 10 }}>
+    <ScrollView style={{ padding: 10, maxHeight: 400 }}>
       <View
         style={{
           marginVertical: 10,
@@ -69,15 +151,10 @@ const TextStylesSheet = () => {
       </View>
 
       <View
-        style={{
-          marginHorizontal: 10,
-          flexDirection: "column",
-          gap: 4,
-          marginTop: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: Colors[colorScheme || "light"].border,
-          paddingBottom: 10,
-        }}
+        style={[
+          styleBottomSheet.container,
+          { borderBottomColor: Colors[colorScheme || "light"].border },
+        ]}
       >
         <ThemedText type="defaultSemiBold">Font</ThemedText>
         <View
@@ -88,10 +165,20 @@ const TextStylesSheet = () => {
           }}
         >
           {listFont.map((font) => (
-            <TouchableOpacity key={font.label}>
+            <TouchableOpacity
+              key={font.label}
+              style={{
+                padding: 2,
+                paddingHorizontal: 10,
+                borderRadius: 10,
+                borderColor: Colors[colorScheme || "light"].text2,
+                borderWidth: items.styles?.font?.[0] === font.fontName ? 1 : 0,
+              }}
+            >
               <ThemedText
                 type="default"
                 style={{ fontSize: 12, fontFamily: font.fontName }}
+                onPress={() => handleUpdateFont(font.fontName)}
               >
                 {font.label}
               </ThemedText>
@@ -99,9 +186,91 @@ const TextStylesSheet = () => {
           ))}
         </View>
       </View>
-    </View>
+
+      <View
+        style={[
+          styleBottomSheet.container,
+          { borderBottomColor: Colors[colorScheme || "light"].border },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Color</ThemedText>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {listColor.map((color) => (
+            <TouchableOpacity
+              key={color.color}
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                backgroundColor: color.color,
+                borderWidth: items.styles?.colorRaw === color.color ? 1 : 0,
+                borderColor:
+                  colorScheme === "dark" &&
+                  items.styles?.colorRaw === color.color
+                    ? "white"
+                    : "black",
+              }}
+              onPress={() => handleUpdateColor(color.colorSkia, color.color)}
+            ></TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View
+        style={[
+          styleBottomSheet.container,
+          {
+            paddingBottom: 30,
+            borderBottomColor: Colors[colorScheme || "light"].border,
+          },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Font Size</ThemedText>
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={8}
+          value={items.styles?.fontSize || 12}
+          maximumValue={40}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+          step={1}
+          onValueChange={(value) => {
+            setLocalFontSize(value);
+          }}
+          onSlidingComplete={(value) => {
+            updateTextStyle(items.id, {
+              ...items.styles,
+              fontSize: value,
+              color: items.styles?.color || Skia.Color("black"),
+              font: items.styles?.font || ["SpaceMono"],
+              colorRaw: items.styles?.colorRaw || "black", // Maintain colorRaw if needed
+            });
+          }}
+        />
+        <ThemedText type="defaultSemiBold">
+          {Math.round(localFontSize)}
+        </ThemedText>
+      </View>
+    </ScrollView>
   );
 };
+
+const styleBottomSheet = StyleSheet.create({
+  container: {
+    marginHorizontal: 10,
+    flexDirection: "column",
+    gap: 4,
+    marginTop: 10,
+    borderBottomWidth: 1,
+    paddingBottom: 10,
+  },
+});
 
 const ImageSkia = () => {
   const [imageUri, setImageUri] = useState("");
@@ -406,7 +575,7 @@ const ImageSkia = () => {
         {focusedItemId !== null && (
           <ThemedButtonIcon
             iconName="creation"
-            onPress={() => open(<TextStylesSheet />)}
+            onPress={() => open(<TextStylesSheet id={focusedItemId} />)}
           />
         )}
         <ThemedButtonIcon iconName="format-text" onPress={addTextEditor} />

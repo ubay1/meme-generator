@@ -1,4 +1,4 @@
-import { EditorItem, TextStyles, useEditorStore } from "@/stores/editor";
+import { EditorItem, useEditorStore } from "@/stores/editor";
 import { Feather, FontAwesome5 } from "@expo/vector-icons";
 import {
   Canvas,
@@ -6,6 +6,7 @@ import {
   SkColor,
   Skia,
   TextAlign,
+  useFonts,
 } from "@shopify/react-native-skia";
 import React, { useEffect, useState } from "react";
 import {
@@ -267,21 +268,34 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
     Keyboard.dismiss();
   };
 
-  const createParagraph = (
-    text: string,
-    width: number,
-    textStyles?: TextStyles
-  ) => {
+  const fontMgr = useFonts({
+    Barrio: [require("../../assets/fonts/Barrio-Regular.ttf")],
+    EduSAHand: [require("../../assets/fonts/EduSAHand-Medium.ttf")],
+    Inter: [require("../../assets/fonts/Inter_18pt-Medium.ttf")],
+    Montserrat: [require("../../assets/fonts/Montserrat-Medium.ttf")],
+    RobotoCondensed: [
+      require("../../assets/fonts/Roboto_Condensed-Regular.ttf"),
+    ],
+    RobotoSlab: [require("../../assets/fonts/RobotoSlab-Medium.ttf")],
+    SpaceMono: [require("../../assets/fonts/SpaceMono-Regular.ttf")],
+  });
+  const createParagraph = (text: string, width: number) => {
+    if (!fontMgr) {
+      return null;
+    }
     // Are the font loaded already?
     const paragraphStyle = {
       textAlign: TextAlign.Center,
     };
+    const fontFamily = (item.styles?.font?.[0] as string) || "sans-serif";
     const textStyle = {
-      color: (textStyles?.color as SkColor) || Skia.Color("#000"),
-      fontFamilies: (textStyles?.font as string[]) || ["sans-serif"],
-      fontSize: textStyles?.fontSize || 14,
+      color: (item.styles?.color as SkColor) || Skia.Color("#000"),
+      fontFamilies: [fontFamily],
+      fontSize: item.styles?.fontSize || 14,
     };
-    const builder = Skia.ParagraphBuilder.Make(paragraphStyle)
+
+    console.log("textStyle", textStyle);
+    const builder = Skia.ParagraphBuilder.Make(paragraphStyle, fontMgr)
       .pushStyle(textStyle)
       .addText(text);
 
@@ -301,8 +315,9 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                 style={[
                   styles.textInput,
                   {
-                    color: item.textColor || "black",
-                    fontSize: 14, // Pertahankan ukuran font dasar
+                    fontFamily: item.styles?.font?.[0] || "sans-serif",
+                    color: item.styles?.colorRaw || "black",
+                    fontSize: item.styles?.fontSize, // Pertahankan ukuran font dasar
                   },
                 ]}
                 value={item.text}
@@ -319,7 +334,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
               >
                 {(() => {
                   const p = createParagraph(item.text ?? "Hello", item.width);
-                  const heightCanvas = p.getHeight(); // hitung tinggi yang dibutuhkan
+                  const heightCanvas = p?.getHeight(); // hitung tinggi yang dibutuhkan
                   // console.log("heightCanvas", heightCanvas);
                   return (
                     <Canvas
