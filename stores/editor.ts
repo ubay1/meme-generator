@@ -38,7 +38,8 @@ interface EditorState {
   updateTextContent: (id: string, newText: string) => void;
   updateTextStyle: (id: string, data: TextStyles) => void;
   updateItemTransform: (id: string, newX: number, newY: number, newScale: number, newRotation: number) => void;
-  updateItemSize: (id: string, newWidth: number, newHeight: number, newX: number, newY: number) => void; // <<-- AKSI BARU
+  updateItemSize: (id: string, newWidth: number, newHeight: number, newX: number, newY: number) => void;
+  resetItemToCenter: (x: number, y: number) => void;
   setFocusedItem: (id: string | null) => void;
   clearAllEditors: () => void;
 }
@@ -154,6 +155,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         item.id === idToUpdate && item.type === 'text' ? { ...item, text: newText } : item
       ),
     }));
+  },
+
+  resetItemToCenter: (x: number, y: number) => {
+    set((state) => {
+      const updatedItems = state.items.map(item => ({
+        ...item,
+        x: x,
+        y: y,
+      }));
+      return {
+        ...state,
+        items: updatedItems
+      };
+    })
   },
 
   updateItemTransform: (idToUpdate: string, newX: number, newY: number, newScale: number, newRotation: number) => {

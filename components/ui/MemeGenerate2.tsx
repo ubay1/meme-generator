@@ -274,6 +274,7 @@ const ImageSkia = () => {
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
+      resetItemToCenter(translationX.value + 100, translationY.value);
     }
   };
 
@@ -284,6 +285,8 @@ const ImageSkia = () => {
   const addTextEditor = useEditorStore((state) => state.addTextEditor);
   const focusedItemId = useEditorStore((state) => state.focusedItemId);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
+
   const handleOutsidePress = () => {
     setFocusedItem(null); // Hapus fokus dari semua komponen editor
     Keyboard.dismiss(); // Tutup keyboard
@@ -422,6 +425,10 @@ const ImageSkia = () => {
             <TouchableOpacity
               onPress={() => {
                 setImageUri("");
+                resetItemToCenter(
+                  translationX.value + 100,
+                  translationY.value + 100
+                );
               }}
             >
               <View
@@ -472,6 +479,10 @@ const ImageSkia = () => {
                 key={template.id}
                 onPress={() => {
                   setImageUri(template.img);
+                  resetItemToCenter(
+                    translationX.value + 100,
+                    translationY.value
+                  );
                 }}
               >
                 <Animated.Image
@@ -487,11 +498,20 @@ const ImageSkia = () => {
       <GestureHandlerRootView>
         {imageUri !== "" ? (
           <GestureDetector gesture={composedGestures}>
-            <>
+            <Animated.View
+              ref={viewRef}
+              style={[
+                composeStyle,
+                {
+                  // width: width, // next bisa diatur lebar & tinggi canvasnya
+                  // height: width,
+                  backgroundColor: "red",
+                },
+              ]}
+            >
               <Animated.Image
-                ref={viewRef}
                 style={[
-                  composeStyle,
+                  // composeStyle,
                   {
                     width: width, // next bisa diatur lebar & tinggi canvasnya
                     height: width,
@@ -519,7 +539,7 @@ const ImageSkia = () => {
                   ))}
                 </View>
               </OutsidePressHandler>
-            </>
+            </Animated.View>
           </GestureDetector>
         ) : (
           <GestureDetector gesture={composedGestures}>
