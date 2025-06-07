@@ -3,19 +3,13 @@ import { useBottomSheet } from "@/context/BottomSheetContext";
 import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
 import Slider from "@react-native-community/slider";
-import {
-  Canvas,
-  Image,
-  SkColor,
-  Skia,
-  useImage,
-} from "@shopify/react-native-skia";
+import { SkColor, Skia } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  Image as ImageRN,
+  Image,
   Keyboard,
   ScrollView,
   StyleSheet,
@@ -35,22 +29,23 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
-import DraggableEditor from "./DraggableTextEditor";
+import DraggableEditor from "./DraggableEditor";
 import { ThemedButtonIcon } from "./ThemedButtonIcon";
 import { ThemedText } from "./ThemedText";
+import { styleBottomSheet } from "./styles/meme-generate";
 
-const LearnSkia = () => {
+const MemeGenerate = () => {
   return (
     <>
-      <ImageSkia />
+      <Content />
     </>
   );
 };
 
-type IPropsTextStyle = {
+type IPropsStyle = {
   id: string;
 };
-const TextStylesSheet = ({ id }: IPropsTextStyle) => {
+const TextStylesSheet = ({ id }: IPropsStyle) => {
   const colorScheme = useColorScheme();
   const items = useEditorStore(
     (state) => state.items.filter((item) => item.id === id)[0]
@@ -252,21 +247,122 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
     </ScrollView>
   );
 };
+const ImageStylesSheet = ({ id }: IPropsStyle) => {
+  const items = useEditorStore(
+    (state) => state.items.filter((item) => item.id === id)[0]
+  );
+  const updateImageStyle = useEditorStore((state) => state.updateImageStyle);
+  // Initialize local state for font size
+  const [opacity, setOpacity] = useState(items.imageStyles?.opacity || 1);
+  const [borderRadius, setBorderRadius] = useState(
+    items.imageStyles?.borderRadius || 1
+  );
 
-const styleBottomSheet = StyleSheet.create({
-  container: {
-    marginHorizontal: 10,
-    flexDirection: "column",
-    gap: 4,
-    marginTop: 10,
-    borderBottomWidth: 1,
-    paddingBottom: 10,
-  },
-});
+  useEffect(() => {
+    if (items.imageStyles?.opacity !== undefined) {
+      setOpacity(items.imageStyles.opacity);
+    }
+  }, [items.imageStyles?.opacity]);
+  useEffect(() => {
+    if (items.imageStyles?.borderRadius !== undefined) {
+      setBorderRadius(items.imageStyles.borderRadius);
+    }
+  }, [items.imageStyles?.borderRadius]);
 
-const ImageSkia = () => {
+  return (
+    <ScrollView style={{ padding: 10, maxHeight: 400 }}>
+      <View
+        style={{
+          marginVertical: 10,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ThemedText type="subtitle">Image styles</ThemedText>
+      </View>
+
+      <View
+        style={[
+          styleBottomSheet.container,
+          {
+            paddingBottom: 30,
+            borderBottomWidth: 0,
+          },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Opacity</ThemedText>
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={0.1}
+          value={items.imageStyles?.opacity || 1}
+          maximumValue={1}
+          minimumTrackTintColor="#cdcdcd"
+          maximumTrackTintColor="#bbb"
+          onValueChange={(value) => {
+            setOpacity(value);
+          }}
+          onSlidingComplete={(value) => {
+            updateImageStyle(items.id, {
+              ...items.imageStyles,
+              opacity: value,
+            });
+          }}
+        />
+        <ThemedText type="defaultSemiBold">{opacity.toFixed(1)}</ThemedText>
+      </View>
+      <View
+        style={[
+          styleBottomSheet.container,
+          {
+            paddingBottom: 30,
+            borderBottomWidth: 0,
+          },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Border Radius</ThemedText>
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={0}
+          value={items.imageStyles?.borderRadius || 0}
+          maximumValue={100}
+          step={1}
+          minimumTrackTintColor="#cdcdcd"
+          maximumTrackTintColor="#bbb"
+          onValueChange={(value) => {
+            setBorderRadius(value);
+          }}
+          onSlidingComplete={(value) => {
+            updateImageStyle(items.id, {
+              ...items.imageStyles,
+              borderRadius: value || 0,
+            });
+          }}
+        />
+        <ThemedText type="defaultSemiBold">
+          {Math.round(borderRadius)}
+        </ThemedText>
+      </View>
+    </ScrollView>
+  );
+};
+
+const Content = () => {
   const [imageUri, setImageUri] = useState("");
-  const image = useImage(imageUri || "");
+
+  const { open } = useBottomSheet();
+  const viewRef = useRef(null);
+
+  const items = useEditorStore((state) => state.items);
+  const addTextEditor = useEditorStore((state) => state.addTextEditor);
+  const addImageEditor = useEditorStore((state) => state.addImageEditor);
+  const focusedItemId = useEditorStore((state) => state.focusedItemId);
+  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
+
+  const getFocusItemType = () =>
+    items.find((item) => item.id === focusedItemId)?.type as "text" | "image";
+
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -276,43 +372,41 @@ const ImageSkia = () => {
       quality: 1,
     });
 
-    // console.log(result);
-
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
+      resetItemToCenter(translationX.value + 100, translationY.value);
+    }
+  };
+  const pickImageSticker = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      // allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      addImageEditor(
+        translationX.value + 100,
+        imageUri === "" ? translationY.value + 100 : translationY.value,
+        result.assets[0].uri
+      );
     }
   };
 
-  const { open } = useBottomSheet();
-  const viewRef = useRef(null);
-
-  const items = useEditorStore((state) => state.items);
-  const addTextEditor = useEditorStore((state) => state.addTextEditor);
-  const focusedItemId = useEditorStore((state) => state.focusedItemId);
-  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
   const handleOutsidePress = () => {
     setFocusedItem(null); // Hapus fokus dari semua komponen editor
     Keyboard.dismiss(); // Tutup keyboard
   };
 
   const { width, height } = Dimensions.get("screen");
-  const CONTAINER_SIZE = width - 100;
-  const CANVAS_SIZE = 100; // max 260
-  const maxTranslateX = CONTAINER_SIZE - CANVAS_SIZE;
-  const maxTranslateY = CONTAINER_SIZE - CANVAS_SIZE;
-  const initialOffset = (CONTAINER_SIZE - CANVAS_SIZE) / 2;
   const translationX = useSharedValue(0);
   const translationY = useSharedValue(0);
   const prevTranslationX = useSharedValue(0);
   const prevTranslationY = useSharedValue(0);
   const scale = useSharedValue(1);
   const startScale = useSharedValue(0);
-  const translationX2 = useSharedValue(initialOffset);
-  const translationY2 = useSharedValue(initialOffset);
-  const prevTranslationX2 = useSharedValue(0);
-  const prevTranslationY2 = useSharedValue(0);
-  // const scale2 = useSharedValue(1);
-  // const startScale2 = useSharedValue(0);
 
   const templatesMeme = [
     { id: 1, img: require("../../assets/images/template1.jpg") },
@@ -346,25 +440,6 @@ const ImageSkia = () => {
     })
     .runOnJS(true);
 
-  const pan2 = Gesture.Pan()
-    .onStart(() => {
-      prevTranslationX2.value = translationX2.value;
-      prevTranslationY2.value = translationY2.value;
-    })
-    .onUpdate((event) => {
-      translationX2.value = clamp(
-        prevTranslationX2.value + event.translationX,
-        0,
-        maxTranslateX
-      );
-      translationY2.value = clamp(
-        prevTranslationY2.value + event.translationY,
-        0,
-        maxTranslateY
-      );
-    })
-    .runOnJS(true);
-
   const pinch = Gesture.Pinch()
     .onStart(() => {
       startScale.value = scale.value;
@@ -377,36 +452,8 @@ const ImageSkia = () => {
       );
     })
     .runOnJS(true);
-  // const pinch2 = Gesture.Pinch()
-  //   .onStart(() => {
-  //     startScale2.value = scale2.value;
-  //   })
-  //   .onUpdate((event) => {
-  //     scale2.value = clamp(
-  //       startScale2.value * event.scale,
-  //       0.5,
-  //       Math.min(width / 100, height / 100)
-  //     );
-  //     scale.value = clamp(
-  //       startScale.value * event.scale,
-  //       0.5,
-  //       Math.min(width / 100, height / 100)
-  //     );
-  //   })
-  //   .runOnJS(true);
-  // const clearFocus = useCallback(() => {
-  //   setFocusedItem(null);
-  //   Keyboard.dismiss(); // Keyboard.dismiss is generally safe to call directly
-  // }, [setFocusedItem]); // Depend on setFocusedItem
-
-  // const canvasTapGesture = Gesture.Tap().onEnd(() => {
-  //   if (focusedItemId !== null) {
-  //     runOnJS(clearFocus)(); // Call the wrapped function
-  //   }
-  // });
 
   const composedGestures = Gesture.Simultaneous(pan, pinch);
-  // const composedGestures2 = Gesture.Simultaneous(pan2, pinch2);
 
   const composeStyle = useAnimatedStyle(() => {
     return {
@@ -418,23 +465,12 @@ const ImageSkia = () => {
     };
   });
 
-  const panStyle2 = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translationX2.value - 15 },
-        { translateY: translationY2.value - 20 },
-      ],
-    };
-  });
-
   const downloadViewAsImage = async () => {
     try {
       const uri = await captureRef(viewRef, {
         format: "png",
         quality: 1,
       });
-
-      console.log("Captured URI:", uri);
 
       const permission = await MediaLibrary.requestPermissionsAsync();
       if (permission.granted) {
@@ -456,6 +492,10 @@ const ImageSkia = () => {
             <TouchableOpacity
               onPress={() => {
                 setImageUri("");
+                resetItemToCenter(
+                  translationX.value + 100,
+                  translationY.value + 100
+                );
               }}
             >
               <View
@@ -492,7 +532,7 @@ const ImageSkia = () => {
                   alignItems: "center",
                 }}
               >
-                <ImageRN
+                <Image
                   source={require("../../assets/images/gallery.png")}
                   width={20}
                   height={20}
@@ -506,9 +546,13 @@ const ImageSkia = () => {
                 key={template.id}
                 onPress={() => {
                   setImageUri(template.img);
+                  resetItemToCenter(
+                    translationX.value + 100,
+                    translationY.value
+                  );
                 }}
               >
-                <ImageRN
+                <Animated.Image
                   source={template.img}
                   style={{ width: 100, height: 100 }}
                   alt="image"
@@ -519,67 +563,84 @@ const ImageSkia = () => {
         </ScrollView>
       </View>
       <GestureHandlerRootView>
-        <GestureDetector gesture={composedGestures}>
-          <Animated.View
-            ref={viewRef}
-            style={[
-              composeStyle,
-              {
-                width: width, // next bisa diatur lebar & tinggi canvasnya
-                height: width,
-                backgroundColor: "white",
-              },
-            ]}
-          >
-            <GestureDetector gesture={pan2}>
-              <Animated.View style={[panStyle2]}>
-                {imageUri !== "" ? (
-                  <Canvas
-                    style={[
-                      {
-                        width: width - 100,
-                        height: width - 100,
-                        // backgroundColor: "red",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      },
-                    ]}
-                  >
-                    <Image
-                      image={image}
-                      fit="contain"
-                      x={0}
-                      y={0}
-                      width={width - 100}
-                      height={width - 100}
+        {imageUri !== "" ? (
+          <GestureDetector gesture={composedGestures}>
+            <Animated.View
+              ref={viewRef}
+              style={[
+                composeStyle,
+                {
+                  // width: width, // next bisa diatur lebar & tinggi canvasnya
+                  // height: width,
+                  backgroundColor: "red",
+                },
+              ]}
+            >
+              <Animated.Image
+                style={[
+                  // composeStyle,
+                  {
+                    width: width, // next bisa diatur lebar & tinggi canvasnya
+                    height: width,
+                    backgroundColor: "white",
+                  },
+                ]}
+                source={
+                  typeof imageUri === "string" ? { uri: imageUri } : imageUri
+                }
+              ></Animated.Image>
+              <OutsidePressHandler
+                onOutsidePress={() => {
+                  setTimeout(() => {
+                    handleOutsidePress();
+                  }, 100);
+                }}
+              >
+                <View style={StyleSheet.absoluteFillObject}>
+                  {items.map((item) => (
+                    <DraggableEditor
+                      key={item.id}
+                      item={item}
+                      isFocused={focusedItemId === item.id}
                     />
-                  </Canvas>
-                ) : (
-                  <View></View>
-                )}
-
-                <OutsidePressHandler
-                  onOutsidePress={() => {
-                    setTimeout(() => {
-                      handleOutsidePress();
-                    }, 100);
-                  }}
-                >
-                  <View style={StyleSheet.absoluteFillObject}>
-                    {items.map((item) => (
-                      <DraggableEditor
-                        key={item.id}
-                        item={item}
-                        isFocused={focusedItemId === item.id}
-                      />
-                    ))}
-                  </View>
-                </OutsidePressHandler>
-              </Animated.View>
-            </GestureDetector>
-          </Animated.View>
-        </GestureDetector>
+                  ))}
+                </View>
+              </OutsidePressHandler>
+            </Animated.View>
+          </GestureDetector>
+        ) : (
+          <GestureDetector gesture={composedGestures}>
+            <Animated.View
+              ref={viewRef}
+              style={[
+                composeStyle,
+                {
+                  width: width, // next bisa diatur lebar & tinggi canvasnya
+                  height: width,
+                  backgroundColor: "white",
+                },
+              ]}
+            >
+              <OutsidePressHandler
+                onOutsidePress={() => {
+                  setTimeout(() => {
+                    handleOutsidePress();
+                  }, 100);
+                }}
+              >
+                <View style={StyleSheet.absoluteFillObject}>
+                  {items.map((item) => (
+                    <DraggableEditor
+                      key={item.id}
+                      item={item}
+                      isFocused={focusedItemId === item.id}
+                    />
+                  ))}
+                </View>
+              </OutsidePressHandler>
+            </Animated.View>
+          </GestureDetector>
+        )}
       </GestureHandlerRootView>
 
       <View
@@ -593,21 +654,28 @@ const ImageSkia = () => {
           gap: 8,
         }}
       >
-        {focusedItemId !== null && (
+        {focusedItemId !== null && getFocusItemType() === "text" && (
           <ThemedButtonIcon
             iconName="creation"
             onPress={() => open(<TextStylesSheet id={focusedItemId} />)}
+          />
+        )}
+        {focusedItemId !== null && getFocusItemType() === "image" && (
+          <ThemedButtonIcon
+            iconName="image-auto-adjust"
+            onPress={() => open(<ImageStylesSheet id={focusedItemId} />)}
           />
         )}
         <ThemedButtonIcon
           iconName="format-text"
           onPress={() =>
             addTextEditor(
-              translationX2.value - 15,
-              imageUri !== "" ? translationY2.value - 250 : translationY2.value
+              translationX.value + 100,
+              imageUri === "" ? translationY.value + 100 : translationY.value
             )
           }
         />
+        <ThemedButtonIcon iconName="image-frame" onPress={pickImageSticker} />
         <ThemedButtonIcon
           iconName="download-circle-outline"
           onPress={downloadViewAsImage}
@@ -617,4 +685,4 @@ const ImageSkia = () => {
   );
 };
 
-export default LearnSkia;
+export default MemeGenerate;

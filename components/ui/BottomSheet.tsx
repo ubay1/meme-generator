@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import React, { ReactNode } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useDerivedValue,
@@ -9,6 +9,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+import { styles } from "./styles/bottom-sheet";
 
 type Props = {
   isOpen: boolean;
@@ -58,23 +59,3 @@ export default function BottomSheetInternal({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  sheet: {
-    width: "100%",
-    position: "absolute",
-    bottom: 40,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-    zIndex: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-  },
-  flex: {
-    flex: 1,
-  },
-});
