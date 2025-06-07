@@ -3,7 +3,7 @@ import { useBottomSheet } from "@/context/BottomSheetContext";
 import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
 import Slider from "@react-native-community/slider";
-import { SkColor, Skia, useImage } from "@shopify/react-native-skia";
+import { SkColor, Skia } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import React, { useEffect, useRef, useState } from "react";
@@ -359,7 +359,6 @@ const styleBottomSheet = StyleSheet.create({
 
 const ImageSkia = () => {
   const [imageUri, setImageUri] = useState("");
-  const image = useImage(imageUri || "");
 
   const { open } = useBottomSheet();
   const viewRef = useRef(null);
@@ -400,7 +399,7 @@ const ImageSkia = () => {
     if (!result.canceled) {
       addImageEditor(
         translationX.value + 100,
-        translationY.value,
+        imageUri === "" ? translationY.value + 100 : translationY.value,
         result.assets[0].uri
       );
     }
@@ -412,23 +411,12 @@ const ImageSkia = () => {
   };
 
   const { width, height } = Dimensions.get("screen");
-  const CONTAINER_SIZE = width - 100;
-  const CANVAS_SIZE = 100; // max 260
-  const maxTranslateX = CONTAINER_SIZE - CANVAS_SIZE;
-  const maxTranslateY = CONTAINER_SIZE - CANVAS_SIZE;
-  const initialOffset = (CONTAINER_SIZE - CANVAS_SIZE) / 2;
   const translationX = useSharedValue(0);
   const translationY = useSharedValue(0);
   const prevTranslationX = useSharedValue(0);
   const prevTranslationY = useSharedValue(0);
   const scale = useSharedValue(1);
   const startScale = useSharedValue(0);
-  const translationX2 = useSharedValue(initialOffset);
-  const translationY2 = useSharedValue(initialOffset);
-  const prevTranslationX2 = useSharedValue(0);
-  const prevTranslationY2 = useSharedValue(0);
-  // const scale2 = useSharedValue(1);
-  // const startScale2 = useSharedValue(0);
 
   const templatesMeme = [
     { id: 1, img: require("../../assets/images/template1.jpg") },
@@ -462,25 +450,6 @@ const ImageSkia = () => {
     })
     .runOnJS(true);
 
-  const pan2 = Gesture.Pan()
-    .onStart(() => {
-      prevTranslationX2.value = translationX2.value;
-      prevTranslationY2.value = translationY2.value;
-    })
-    .onUpdate((event) => {
-      translationX2.value = clamp(
-        prevTranslationX2.value + event.translationX,
-        0,
-        maxTranslateX
-      );
-      translationY2.value = clamp(
-        prevTranslationY2.value + event.translationY,
-        0,
-        maxTranslateY
-      );
-    })
-    .runOnJS(true);
-
   const pinch = Gesture.Pinch()
     .onStart(() => {
       startScale.value = scale.value;
@@ -506,23 +475,12 @@ const ImageSkia = () => {
     };
   });
 
-  const panStyle2 = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { translateX: translationX2.value - 15 },
-        { translateY: translationY2.value - 20 },
-      ],
-    };
-  });
-
   const downloadViewAsImage = async () => {
     try {
       const uri = await captureRef(viewRef, {
         format: "png",
         quality: 1,
       });
-
-      console.log("Captured URI:", uri);
 
       const permission = await MediaLibrary.requestPermissionsAsync();
       if (permission.granted) {
@@ -721,7 +679,10 @@ const ImageSkia = () => {
         <ThemedButtonIcon
           iconName="format-text"
           onPress={() =>
-            addTextEditor(translationX.value + 100, translationY.value + 100)
+            addTextEditor(
+              translationX.value + 100,
+              imageUri === "" ? translationY.value + 100 : translationY.value
+            )
           }
         />
         <ThemedButtonIcon iconName="image-frame" onPress={pickImageSticker} />
