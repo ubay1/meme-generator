@@ -41,10 +41,10 @@ const MemeGenerate2 = () => {
   );
 };
 
-type IPropsTextStyle = {
+type IPropsStyle = {
   id: string;
 };
-const TextStylesSheet = ({ id }: IPropsTextStyle) => {
+const TextStylesSheet = ({ id }: IPropsStyle) => {
   const colorScheme = useColorScheme();
   const items = useEditorStore(
     (state) => state.items.filter((item) => item.id === id)[0]
@@ -246,6 +246,105 @@ const TextStylesSheet = ({ id }: IPropsTextStyle) => {
     </ScrollView>
   );
 };
+const ImageStylesSheet = ({ id }: IPropsStyle) => {
+  const items = useEditorStore(
+    (state) => state.items.filter((item) => item.id === id)[0]
+  );
+  const updateImageStyle = useEditorStore((state) => state.updateImageStyle);
+  // Initialize local state for font size
+  const [opacity, setOpacity] = useState(items.imageStyles?.opacity || 1);
+  const [borderRadius, setBorderRadius] = useState(
+    items.imageStyles?.borderRadius || 1
+  );
+
+  useEffect(() => {
+    if (items.imageStyles?.opacity !== undefined) {
+      setOpacity(items.imageStyles.opacity);
+    }
+  }, [items.imageStyles?.opacity]);
+  useEffect(() => {
+    if (items.imageStyles?.borderRadius !== undefined) {
+      setBorderRadius(items.imageStyles.borderRadius);
+    }
+  }, [items.imageStyles?.borderRadius]);
+
+  return (
+    <ScrollView style={{ padding: 10, maxHeight: 400 }}>
+      <View
+        style={{
+          marginVertical: 10,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ThemedText type="subtitle">Image styles</ThemedText>
+      </View>
+
+      <View
+        style={[
+          styleBottomSheet.container,
+          {
+            paddingBottom: 30,
+            borderBottomWidth: 0,
+          },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Opacity</ThemedText>
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={0.1}
+          value={items.imageStyles?.opacity || 1}
+          maximumValue={1}
+          minimumTrackTintColor="#cdcdcd"
+          maximumTrackTintColor="#bbb"
+          onValueChange={(value) => {
+            setOpacity(value);
+          }}
+          onSlidingComplete={(value) => {
+            updateImageStyle(items.id, {
+              ...items.imageStyles,
+              opacity: value,
+            });
+          }}
+        />
+        <ThemedText type="defaultSemiBold">{opacity.toFixed(1)}</ThemedText>
+      </View>
+      <View
+        style={[
+          styleBottomSheet.container,
+          {
+            paddingBottom: 30,
+            borderBottomWidth: 0,
+          },
+        ]}
+      >
+        <ThemedText type="defaultSemiBold">Border Radius</ThemedText>
+        <Slider
+          style={{ width: "100%", height: 40 }}
+          minimumValue={0}
+          value={items.imageStyles?.borderRadius || 0}
+          maximumValue={100}
+          step={1}
+          minimumTrackTintColor="#cdcdcd"
+          maximumTrackTintColor="#bbb"
+          onValueChange={(value) => {
+            setBorderRadius(value);
+          }}
+          onSlidingComplete={(value) => {
+            updateImageStyle(items.id, {
+              ...items.imageStyles,
+              borderRadius: value || 0,
+            });
+          }}
+        />
+        <ThemedText type="defaultSemiBold">
+          {Math.round(borderRadius)}
+        </ThemedText>
+      </View>
+    </ScrollView>
+  );
+};
 
 const styleBottomSheet = StyleSheet.create({
   container: {
@@ -261,6 +360,20 @@ const styleBottomSheet = StyleSheet.create({
 const ImageSkia = () => {
   const [imageUri, setImageUri] = useState("");
   const image = useImage(imageUri || "");
+
+  const { open } = useBottomSheet();
+  const viewRef = useRef(null);
+
+  const items = useEditorStore((state) => state.items);
+  const addTextEditor = useEditorStore((state) => state.addTextEditor);
+  const addImageEditor = useEditorStore((state) => state.addImageEditor);
+  const focusedItemId = useEditorStore((state) => state.focusedItemId);
+  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
+
+  const getFocusItemType = () =>
+    items.find((item) => item.id === focusedItemId)?.type as "text" | "image";
+
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -270,22 +383,28 @@ const ImageSkia = () => {
       quality: 1,
     });
 
-    // console.log(result);
-
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
       resetItemToCenter(translationX.value + 100, translationY.value);
     }
   };
+  const pickImageSticker = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      // allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-  const { open } = useBottomSheet();
-  const viewRef = useRef(null);
-
-  const items = useEditorStore((state) => state.items);
-  const addTextEditor = useEditorStore((state) => state.addTextEditor);
-  const focusedItemId = useEditorStore((state) => state.focusedItemId);
-  const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
-  const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
+    if (!result.canceled) {
+      addImageEditor(
+        translationX.value + 100,
+        translationY.value,
+        result.assets[0].uri
+      );
+    }
+  };
 
   const handleOutsidePress = () => {
     setFocusedItem(null); // Hapus fokus dari semua komponen editor
@@ -587,10 +706,16 @@ const ImageSkia = () => {
           gap: 8,
         }}
       >
-        {focusedItemId !== null && (
+        {focusedItemId !== null && getFocusItemType() === "text" && (
           <ThemedButtonIcon
             iconName="creation"
             onPress={() => open(<TextStylesSheet id={focusedItemId} />)}
+          />
+        )}
+        {focusedItemId !== null && getFocusItemType() === "image" && (
+          <ThemedButtonIcon
+            iconName="image-auto-adjust"
+            onPress={() => open(<ImageStylesSheet id={focusedItemId} />)}
           />
         )}
         <ThemedButtonIcon
@@ -599,6 +724,7 @@ const ImageSkia = () => {
             addTextEditor(translationX.value + 100, translationY.value + 100)
           }
         />
+        <ThemedButtonIcon iconName="image-frame" onPress={pickImageSticker} />
         <ThemedButtonIcon
           iconName="download-circle-outline"
           onPress={downloadViewAsImage}

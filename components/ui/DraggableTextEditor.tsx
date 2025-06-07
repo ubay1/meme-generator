@@ -356,7 +356,13 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
           ) : (
             <Image
               source={{ uri: item.imageUrl }}
-              style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                resizeMode: "contain",
+                opacity: item.imageStyles?.opacity,
+                borderRadius: item.imageStyles?.borderRadius,
+              }}
             />
           )}
         </View>

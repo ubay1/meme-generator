@@ -8,6 +8,10 @@ export type TextStyles = {
   font?: string[];
   fontSize?: number;
 }
+export type ImageStyles = {
+  opacity?: number;
+  borderRadius?: number;
+}
 export type EditorItem = {
   id: string;
   type: 'text' | 'image';
@@ -25,6 +29,7 @@ export type EditorItem = {
   imageUrl?: string;
   imageWidth?: number; // Bisa dihapus jika width/height sudah ada
   imageHeight?: number; // Bisa dihapus jika width/height sudah ada
+  imageStyles?: ImageStyles
 };
 
 interface EditorState {
@@ -32,11 +37,12 @@ interface EditorState {
   focusedItemId: string | null;
   nextId: number;
   addTextEditor: (x: number, y: number) => void;
-  addImageEditor: () => void;
+  addImageEditor: (x: number, y: number, img: string) => void;
   deleteEditor: (id: string) => void;
   copyEditor: (id: string) => void;
   updateTextContent: (id: string, newText: string) => void;
   updateTextStyle: (id: string, data: TextStyles) => void;
+  updateImageStyle: (id: string, data: ImageStyles) => void;
   updateItemTransform: (id: string, newX: number, newY: number, newScale: number, newRotation: number) => void;
   updateItemSize: (id: string, newWidth: number, newHeight: number, newX: number, newY: number) => void;
   resetItemToCenter: (x: number, y: number) => void;
@@ -63,8 +69,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         textColor: 'black',
         scale: 1,
         rotation: 0,
-        width: defaultWidth, // <<-- GUNAKAN INI
-        height: defaultHeight, // <<-- GUNAKAN INI
+        width: defaultWidth,
+        height: defaultHeight,
         styles: {
           color: Skia.Color('black'),
           colorRaw: 'black', // Tambahkan ini untuk warna asli Skia, jika ada
@@ -96,7 +102,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     })
   },
 
-  addImageEditor: () => {
+  addImageEditor: (x: number, y: number, img: string) => {
     set((state) => {
       const newId = state.nextId.toString();
       const defaultImageWidth = 200; // Lebar default untuk gambar
@@ -104,13 +110,17 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const newImageItem: EditorItem = {
         id: newId,
         type: 'image',
-        imageUrl: 'https://picsum.photos/200/200?random=1',
-        x: -100,
-        y: -100,
-        width: defaultImageWidth, // <<-- GUNAKAN INI
-        height: defaultImageHeight, // <<-- GUNAKAN INI
+        imageUrl: img || 'https://picsum.photos/200/200?random=1',
+        x: x,
+        y: y,
         scale: 1,
         rotation: 0,
+        width: defaultImageWidth,
+        height: defaultImageHeight,
+        imageStyles: {
+          opacity: 1,
+          borderRadius: 0,
+        }
       };
       return {
         items: [...state.items, newImageItem],
@@ -118,6 +128,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         focusedItemId: newId,
       };
     });
+  },
+  updateImageStyle: (id: string, data: ImageStyles) => {
+    set((state) => {
+      const focusedItem = state.items.find(item => item.id === id);
+      if (!focusedItem) return state;
+
+      const updatedItems = state.items.map(item =>
+        item.id === id ? { ...item, imageStyles: data } : item
+      );
+
+      return {
+        ...state,
+        items: updatedItems
+      };
+    })
   },
 
   deleteEditor: (idToDelete: string) => {
