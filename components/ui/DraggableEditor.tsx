@@ -278,6 +278,20 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
     ],
     RobotoSlab: [require("../../assets/fonts/RobotoSlab-Medium.ttf")],
     SpaceMono: [require("../../assets/fonts/SpaceMono-Regular.ttf")],
+    BethanyAvanue: [require("../../assets/fonts/BethanyAvanue.otf")],
+    BlMindfuck: [require("../../assets/fonts/BlMindfuck-Regular.ttf")],
+    Braniella: [require("../../assets/fonts/Braniella.ttf")],
+    ChillingNightime: [require("../../assets/fonts/ChillingNightime.ttf")],
+    CyberBrush: [require("../../assets/fonts/CyberBrush.ttf")],
+    Glinka: [require("../../assets/fonts/Glinka.ttf")],
+    Inktopia: [require("../../assets/fonts/Inktopia.otf")],
+    KingRimba: [require("../../assets/fonts/KingRimba.ttf")],
+    MorallySerif: [require("../../assets/fonts/MorallySerif.otf")],
+    OBITRUKTrial: [require("../../assets/fonts/OBITRUKTrial.ttf")],
+    SimpleDiary: [require("../../assets/fonts/SimpleDiary.otf")],
+    SuperAdorable: [require("../../assets/fonts/SuperAdorable.ttf")],
+    Tamira: [require("../../assets/fonts/Tamira.ttf")],
+    TheGoodfather: [require("../../assets/fonts/TheGoodfather.otf")],
   });
   const createParagraph = (text: string, width: number) => {
     if (!fontMgr) {

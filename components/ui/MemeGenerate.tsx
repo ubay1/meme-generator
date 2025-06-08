@@ -3,7 +3,7 @@ import { useBottomSheet } from "@/context/BottomSheetContext";
 import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
 import Slider from "@react-native-community/slider";
-import { SkColor, Skia } from "@shopify/react-native-skia";
+import { Skia } from "@shopify/react-native-skia";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import React, { useEffect, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import {
   Dimensions,
   Image,
   Keyboard,
+  KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -29,7 +30,14 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
+import ColorPicker, {
+  ColorFormatsObject,
+  colorKit,
+  Panel2,
+} from "reanimated-color-picker";
+import BaseModalColorPicker from "./BaseModalColorPicker";
 import DraggableEditor from "./DraggableEditor";
+import { colorPickerStyle } from "./styles/colorpicker";
 import { styleBottomSheet } from "./styles/meme-generate";
 import { ThemedButtonIcon } from "./ThemedButtonIcon";
 import { ThemedText } from "./ThemedText";
@@ -71,37 +79,20 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
     { label: "RobotoCondensed", fontName: "RobotoCondensed" },
     { label: "RobotoSlab", fontName: "RobotoSlab" },
     { label: "SpaceMono", fontName: "SpaceMono" },
-  ];
-
-  const listColor = [
-    {
-      color: "black",
-      colorSkia: Skia.Color("black"),
-    },
-    {
-      color: "white",
-      colorSkia: Skia.Color("white"),
-    },
-    {
-      color: "red",
-      colorSkia: Skia.Color("red"),
-    },
-    {
-      color: "yellow",
-      colorSkia: Skia.Color("yellow"),
-    },
-    {
-      color: "green",
-      colorSkia: Skia.Color("green"),
-    },
-    {
-      color: "blue",
-      colorSkia: Skia.Color("blue"),
-    },
-    {
-      color: "orange",
-      colorSkia: Skia.Color("orange"),
-    },
+    { label: "Bethany Avenue", fontName: "BethanyAvanue" },
+    { label: "BL Mindfuck", fontName: "BlMindfuck" },
+    { label: "Braniella", fontName: "Braniella" },
+    { label: "Chilling Nightime", fontName: "ChillingNightime" },
+    { label: "Cyber Brush", fontName: "CyberBrush" },
+    { label: "Glinka", fontName: "Glinka" },
+    { label: "Inktopia", fontName: "Inktopia" },
+    { label: "King Rimba", fontName: "KingRimba" },
+    { label: "Morally Serif", fontName: "MorallySerif" },
+    { label: "OBIT RUK Trial", fontName: "OBITRUKTrial" },
+    { label: "Simple Diary", fontName: "SimpleDiary" },
+    { label: "Super Adorable", fontName: "SuperAdorable" },
+    { label: "Tamira", fontName: "Tamira" },
+    { label: "The Goodfather", fontName: "TheGoodfather" },
   ];
 
   // Helper function to update font styles in the store
@@ -114,12 +105,22 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
     });
   };
 
-  // Helper function to update color styles in the store
-  const handleUpdateColor = (colorSkia: SkColor, colorRaw: string) => {
+  // initial random color
+  const initialColor = colorKit.randomRgbColor().hex();
+  const [resultColor, setResultColor] = useState(initialColor);
+
+  const currentColor = useSharedValue(initialColor);
+  const onColorChange = (color: ColorFormatsObject) => {
+    "worklet";
+    currentColor.value = color.hex;
+  };
+  // runs on the js thread on color pick
+  const onColorPick = (color: ColorFormatsObject) => {
+    setResultColor(color.hex);
     updateTextStyle(items.id, {
       ...items.styles,
-      color: colorSkia,
-      colorRaw: colorRaw,
+      color: Skia.Color(color.hex),
+      colorRaw: color.hex,
       fontSize: localFontSize, // Use the current local font size
     });
   };
@@ -180,8 +181,42 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
           { borderBottomColor: Colors[colorScheme || "light"].border },
         ]}
       >
-        <ThemedText type="defaultSemiBold">Color</ThemedText>
-        <View
+        <View style={{ flexDirection: "row", gap: 4 }}>
+          <ThemedText type="defaultSemiBold">Warna teks</ThemedText>
+          <View
+            style={{
+              backgroundColor: currentColor.value,
+              padding: 2,
+              height: 20,
+              width: 20,
+              borderWidth: 1,
+              borderColor: colorScheme === "dark" ? "#fff" : "#000",
+            }}
+          ></View>
+        </View>
+        <BaseModalColorPicker
+          name="Color Picker"
+          backgroundColor={currentColor}
+        >
+          <KeyboardAvoidingView behavior="position">
+            <ColorPicker
+              value={resultColor}
+              sliderThickness={25}
+              thumbSize={30}
+              thumbShape="rect"
+              onChange={onColorChange}
+              onCompleteJS={onColorPick}
+              style={colorPickerStyle.picker}
+            >
+              <Panel2
+                style={colorPickerStyle.panelStyle}
+                thumbShape="ring"
+                reverseVerticalChannel
+              />
+            </ColorPicker>
+          </KeyboardAvoidingView>
+        </BaseModalColorPicker>
+        {/* <View
           style={{
             flexDirection: "row",
             flexWrap: "wrap",
@@ -206,7 +241,7 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
               onPress={() => handleUpdateColor(color.colorSkia, color.color)}
             ></TouchableOpacity>
           ))}
-        </View>
+        </View> */}
       </View>
 
       <View
