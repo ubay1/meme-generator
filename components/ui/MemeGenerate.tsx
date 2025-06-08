@@ -30,9 +30,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
 import DraggableEditor from "./DraggableEditor";
+import { styleBottomSheet } from "./styles/meme-generate";
 import { ThemedButtonIcon } from "./ThemedButtonIcon";
 import { ThemedText } from "./ThemedText";
-import { styleBottomSheet } from "./styles/meme-generate";
 
 const MemeGenerate = () => {
   return (
@@ -360,6 +360,11 @@ const Content = () => {
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
   const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
 
+  /* for debug position x,y canvas & content */
+  // const itemTest = useEditorStore(
+  //   (state) => state.items.filter((item) => item.id === focusedItemId)[0]
+  // );
+
   const getFocusItemType = () =>
     items.find((item) => item.id === focusedItemId)?.type as "text" | "image";
 
@@ -374,7 +379,7 @@ const Content = () => {
 
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
-      resetItemToCenter(translationX.value + 100, translationY.value);
+      resetItemToCenter(111, -334);
     }
   };
   const pickImageSticker = async () => {
@@ -388,8 +393,8 @@ const Content = () => {
 
     if (!result.canceled) {
       addImageEditor(
-        translationX.value + 100,
-        imageUri === "" ? translationY.value + 100 : translationY.value,
+        imageUri === "" ? 102 : 111,
+        imageUri === "" ? 103 : -334,
         result.assets[0].uri
       );
     }
@@ -407,6 +412,10 @@ const Content = () => {
   const prevTranslationY = useSharedValue(0);
   const scale = useSharedValue(1);
   const startScale = useSharedValue(0);
+
+  /* for debug position x,y canvas & content */
+  // const [trX, setTrX] = useState(0);
+  // const [trY, setTrY] = useState(0);
 
   const templatesMeme = [
     { id: 1, img: require("../../assets/images/template1.jpg") },
@@ -437,6 +446,11 @@ const Content = () => {
         -maxTranslateY,
         maxTranslateY
       );
+
+      /* for debug position x,y canvas & content */
+      // setTrX(translationX.value);
+      // setTrY(translationY.value);
+      // console.log("translationY = ", translationY.value);
     })
     .runOnJS(true);
 
@@ -492,10 +506,7 @@ const Content = () => {
             <TouchableOpacity
               onPress={() => {
                 setImageUri("");
-                resetItemToCenter(
-                  translationX.value + 100,
-                  translationY.value + 100
-                );
+                resetItemToCenter(102, 103);
               }}
             >
               <View
@@ -546,10 +557,7 @@ const Content = () => {
                 key={template.id}
                 onPress={() => {
                   setImageUri(template.img);
-                  resetItemToCenter(
-                    translationX.value + 100,
-                    translationY.value
-                  );
+                  resetItemToCenter(111, -334);
                 }}
               >
                 <Animated.Image
@@ -670,8 +678,8 @@ const Content = () => {
           iconName="format-text"
           onPress={() =>
             addTextEditor(
-              translationX.value + 100,
-              imageUri === "" ? translationY.value + 100 : translationY.value
+              imageUri === "" ? 102 : 111,
+              imageUri === "" ? 103 : -334
             )
           }
         />
@@ -681,6 +689,46 @@ const Content = () => {
           onPress={downloadViewAsImage}
         />
       </View>
+
+      {/* for debug position x,y canvas & content */}
+      {/* <View
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+        }}
+      >
+        <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+          <ThemedText type="default">
+            translation x: {Math.round(trX)}
+          </ThemedText>
+        </Animated.View>
+        <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+          <ThemedText type="default">
+            translation y: {Math.round(trY)}
+          </ThemedText>
+        </Animated.View>
+      </View>
+      {focusedItemId !== null && (
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+            <ThemedText type="default">x: {itemTest.x}</ThemedText>
+          </Animated.View>
+          <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+            <ThemedText type="default">y: {itemTest.y}</ThemedText>
+          </Animated.View>
+          <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+            <ThemedText type="default">height: {itemTest.height}</ThemedText>
+          </Animated.View>
+        </View>
+      )} */}
     </>
   );
 };

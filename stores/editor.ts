@@ -105,8 +105,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   addImageEditor: (x: number, y: number, img: string) => {
     set((state) => {
       const newId = state.nextId.toString();
-      const defaultImageWidth = 200; // Lebar default untuk gambar
-      const defaultImageHeight = 300; // Tinggi default untuk gambar
+      const defaultImageWidth = 150; // Lebar default untuk gambar
+      const defaultImageHeight = 150; // Tinggi default untuk gambar
       const newImageItem: EditorItem = {
         id: newId,
         type: 'image',
