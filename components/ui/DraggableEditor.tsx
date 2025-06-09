@@ -5,6 +5,7 @@ import {
   Paragraph as ParagrafSkia,
   SkColor,
   Skia,
+  SkTextStyle,
   TextAlign,
   useFonts,
 } from "@shopify/react-native-skia";
@@ -23,7 +24,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { styles } from "./styles/draggle-editor";
+import { styles } from "../styles/draggle-editor";
 
 const MIN_HEIGHT = 50;
 const MIN_WIDTH = 50; // Ubah menjadi 50 agar lebih fleksibel untuk teks juga
@@ -42,9 +43,6 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
   );
   const updateItemSize = useEditorStore((state) => state.updateItemSize);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
-
-  // const [imageUri, setImageUri] = useState("");
-  // const image = useImage(imageUri || "");
 
   // Inisialisasi useSharedValue dengan state dari item
   const translateX = useSharedValue(item.x);
@@ -302,10 +300,22 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
       textAlign: TextAlign.Center,
     };
     const fontFamily = (item.styles?.font?.[0] as string) || "sans-serif";
-    const textStyle = {
-      color: (item.styles?.color as SkColor) || Skia.Color("#000"),
+    const textStyle: SkTextStyle = {
+      color: (item.styles?.frontColor?.color as SkColor) || Skia.Color("#000"),
       fontFamilies: [fontFamily],
       fontSize: item.styles?.fontSize || 14,
+      backgroundColor:
+        (item.styles?.bgColor?.color as SkColor) || Skia.Color("#fff"),
+      shadows: [
+        {
+          color:
+            (item.styles?.shadowColor?.color as SkColor) || Skia.Color("pink"),
+          offset: {
+            x: item.styles?.shadowColor?.x || 0,
+            y: item.styles?.shadowColor?.y || 0,
+          },
+        },
+      ],
     };
 
     const builder = Skia.ParagraphBuilder.Make(paragraphStyle, fontMgr)
@@ -329,7 +339,7 @@ const DraggableEditor = ({ item, isFocused }: Props) => {
                   styles.textInput,
                   {
                     fontFamily: item.styles?.font?.[0] || "sans-serif",
-                    color: item.styles?.colorRaw || "black",
+                    color: item.styles?.frontColor?.colorRaw || "black",
                     fontSize: item.styles?.fontSize, // Pertahankan ukuran font dasar
                   },
                 ]}

@@ -1,12 +1,11 @@
-import { StyleSheet } from "react-native";
-
-import MemeGenerate from "@/components/ui/MemeGenerate";
+import CanvasMain from "@/components/screens/CanvasMain";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   return (
     <ThemedView style={styles.titleContainer}>
-      <MemeGenerate />
+      <CanvasMain />
     </ThemedView>
   );
 }

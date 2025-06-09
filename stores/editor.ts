@@ -2,11 +2,16 @@
 import { SkColor, Skia } from '@shopify/react-native-skia';
 import { create } from 'zustand';
 
+type Color = {
+  color: SkColor,
+  colorRaw: string
+}
 export type TextStyles = {
-  color: SkColor;
-  colorRaw?: string;
   font?: string[];
   fontSize?: number;
+  frontColor?: Color
+  shadowColor?: Color & { x: number; y: number }
+  bgColor?: Color
 }
 export type ImageStyles = {
   opacity?: number;
@@ -72,8 +77,20 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         width: defaultWidth,
         height: defaultHeight,
         styles: {
-          color: Skia.Color('black'),
-          colorRaw: 'black', // Tambahkan ini untuk warna asli Skia, jika ada
+          frontColor: {
+            color: Skia.Color('black'),
+            colorRaw: 'black',
+          },
+          bgColor: {
+            color: Skia.Color('white'),
+            colorRaw: 'white',
+          },
+          shadowColor: {
+            color: Skia.Color('black'),
+            colorRaw: 'black',
+            x: 0,
+            y: 0
+          },
           font: ['SpaceMono'],
           fontSize: 14,
         }

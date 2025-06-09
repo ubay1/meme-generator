@@ -9,7 +9,7 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { styles } from "./styles/bottom-sheet";
+import { styles } from "../styles/bottom-sheet";
 
 type Props = {
   isOpen: boolean;
