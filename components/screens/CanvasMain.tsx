@@ -19,7 +19,6 @@ import { captureRef } from "react-native-view-shot";
 import DraggableEditorV3 from "../ui/DraggableEditorV2";
 import GuideLines from "../ui/GuideLines";
 import { ThemedButtonIcon } from "../ui/ThemedButtonIcon";
-import { ThemedText } from "../ui/ThemedText";
 import CanvasTemplate from "./CanvasTemplate";
 import ImageStylesSheet from "./ImageStylesSheet";
 import TextStylesSheet from "./TextStylesSheet";
@@ -46,9 +45,9 @@ const Content = () => {
   const resetItemToCenter = useEditorStore((state) => state.resetItemToCenter);
 
   /* for debug position x,y canvas & content */
-  const itemTest = useEditorStore(
-    (state) => state.items.filter((item) => item.id === focusedItemId)[0]
-  );
+  // const itemTest = useEditorStore(
+  //   (state) => state.items.filter((item) => item.id === focusedItemId)[0]
+  // );
 
   const getFocusItemType = () =>
     items.find((item) => item.id === focusedItemId)?.type as "text" | "image";
@@ -85,8 +84,8 @@ const Content = () => {
   const startScale = useSharedValue(0);
 
   /* for debug position x,y canvas & content */
-  const [trX, setTrX] = useState(0);
-  const [trY, setTrY] = useState(0);
+  // const [trX, setTrX] = useState(0);
+  // const [trY, setTrY] = useState(0);
 
   const pan = Gesture.Pan()
     // .minDistance(1)
@@ -110,8 +109,8 @@ const Content = () => {
       );
 
       /* for debug position x,y canvas & content */
-      setTrX(translationX.value);
-      setTrY(translationY.value);
+      // setTrX(translationX.value);
+      // setTrY(translationY.value);
       // console.log("translationY = ", translationY.value);
     })
     .runOnJS(true);
@@ -300,7 +299,7 @@ const Content = () => {
       </View>
 
       {/* for debug position x,y canvas & content */}
-      <View
+      {/* <View
         style={{
           display: "flex",
           flexDirection: "row",
@@ -342,7 +341,7 @@ const Content = () => {
             </ThemedText>
           </Animated.View>
         </View>
-      )}
+      )} */}
     </>
   );
 };
