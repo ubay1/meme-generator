@@ -27,16 +27,18 @@ import Animated, {
 import { styles } from "../styles/draggle-editor";
 
 const MIN_HEIGHT = 50;
-const MIN_WIDTH = 50; // Ubah menjadi 50 agar lebih fleksibel untuk teks juga
+const MIN_WIDTH = 50;
 
-type Props = {
+export interface PropsCanvas {
+  hCanvas?: number; // Height of the canvas
+  wCanvas?: number; // Width of the canvas
+}
+interface Props extends PropsCanvas {
   item: EditorItem;
   isFocused: boolean;
-  hCanvas?: number;
-  wCanvas?: number;
-};
+}
 
-const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
+const DraggableEditorV2 = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
   const deleteEditor = useEditorStore((state) => state.deleteEditor);
   const copyEditor = useEditorStore((state) => state.copyEditor);
   const updateTextContent = useEditorStore((state) => state.updateTextContent);
@@ -45,8 +47,11 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
   );
   const updateItemSize = useEditorStore((state) => state.updateItemSize);
   const setFocusedItem = useEditorStore((state) => state.setFocusedItem);
+  const setHorizontalGuide = useEditorStore(
+    (state) => state.setHorizontalGuide
+  );
+  const setVerticalGuide = useEditorStore((state) => state.setVerticalGuide);
 
-  // Inisialisasi useSharedValue dengan state dari item
   const translateX = useSharedValue(item.x);
   const translateY = useSharedValue(item.y);
   const scale = useSharedValue(item.scale);
@@ -55,23 +60,19 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
   const currentWidth = useSharedValue(item.width);
   const currentHeight = useSharedValue(item.height);
 
-  // Saved values untuk gesture drag, pinch, rotate
   const savedTranslateX = useSharedValue(item.x);
   const savedTranslateY = useSharedValue(item.y);
   const savedScale = useSharedValue(item.scale);
   const savedRotation = useSharedValue(item.rotation);
 
-  // Saved values untuk gesture resize (Bottom-Right)
   const savedWidth = useSharedValue(item.width);
   const savedHeight = useSharedValue(item.height);
   const savedOriginalX = useSharedValue(item.x);
   const savedOriginalY = useSharedValue(item.y);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSnapping, setIsSnapping] = useState(false); // New state to indicate snapping
 
-  // Sinkronisasi state dari store ke shared values Reanimated
-  // Gunakan dependencies yang lebih spesifik untuk mencegah re-render yang tidak perlu.
-  // Item sebagai objek akan sering berubah, jadi lebih baik pecah.
   useEffect(() => {
     translateX.value = item.x;
     translateY.value = item.y;
@@ -79,7 +80,7 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     rotation.value = item.rotation;
     currentWidth.value = item.width;
     currentHeight.value = item.height;
-    // Juga update saved values agar selalu sinkron dengan state terbaru dari store
+
     savedTranslateX.value = item.x;
     savedTranslateY.value = item.y;
     savedScale.value = item.scale;
@@ -95,8 +96,6 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     item.rotation,
     item.width,
     item.height,
-    // Tambahkan shared values itu sendiri sebagai dependencies untuk menghindari warning
-    // Namun sebenarnya tidak perlu karena nilai shared values diupdate langsung di sini
     translateX,
     translateY,
     scale,
@@ -113,9 +112,7 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     savedOriginalY,
   ]);
 
-  // Callback untuk menyimpan transformasi (posisi, skala, rotasi) ke store
   const saveTransformToStore = () => {
-    // console.log(`Saving transform: x=${translateX.value.toFixed(2)}, y=${translateY.value.toFixed(2)}, scale=${scale.value.toFixed(2)}, rotation=${rotation.value.toFixed(2)}`);
     updateItemTransform(
       item.id,
       translateX.value,
@@ -125,14 +122,12 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     );
   };
 
-  // Callback untuk menyimpan ukuran (lebar, tinggi, dan posisi baru) ke store
   const saveSizeToStore = (
     newX: number,
     newY: number,
     newWidth: number,
     newHeight: number
   ) => {
-    // console.log(`Saving size: x=${newX.toFixed(2)}, y=${newY.toFixed(2)}, w=${newWidth.toFixed(2)}, h=${newHeight.toFixed(2)}`);
     updateItemSize(item.id, newWidth, newHeight, newX, newY);
   };
 
@@ -144,10 +139,38 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
       runOnJS(setFocusedItem)(item.id);
       savedTranslateX.value = translateX.value;
       savedTranslateY.value = translateY.value;
+      runOnJS(setIsSnapping)(false); // Reset snapping state on start
     })
     .onUpdate((event) => {
-      translateX.value = savedTranslateX.value + event.translationX;
-      translateY.value = savedTranslateY.value + event.translationY;
+      const newX = savedTranslateX.value + event.translationX;
+      const newY = savedTranslateY.value + event.translationY;
+
+      translateX.value = newX;
+      translateY.value = newY;
+
+      const elementCenterX = newX + currentWidth.value / 2;
+      const elementCenterY = newY + currentHeight.value / 2;
+
+      const tolerance = 10;
+
+      if (wCanvas && Math.abs(elementCenterX - wCanvas / 2) < tolerance) {
+        runOnJS(setVerticalGuide)(true);
+      } else {
+        runOnJS(setVerticalGuide)(false);
+      }
+
+      // kondisi pertama ketika canvas menggunakan gambar
+      // kondisi kedua ketika canvas tanpa gambar
+      if (
+        (hCanvas &&
+          Math.abs(elementCenterY - hCanvas / 2) > 330 &&
+          Math.abs(elementCenterY - hCanvas / 2) < 380) ||
+        (hCanvas && Math.abs(elementCenterY - hCanvas / 2) < tolerance)
+      ) {
+        runOnJS(setHorizontalGuide)(true);
+      } else {
+        runOnJS(setHorizontalGuide)(false);
+      }
     })
     .onEnd(() => {
       runOnJS(saveTransformToStore)();
@@ -191,9 +214,6 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     }
   });
 
-  // Komposisi gesture utama untuk item
-  // Gesture resize harus terpisah dari composedGestures utama agar tidak konflik
-  // dan ditempatkan langsung di GestureDetector masing-masing handle.
   const composedGestures = Gesture.Simultaneous(
     panGesture,
     pinchGesture,
@@ -219,7 +239,6 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
 
       currentWidth.value = newWidth;
       currentHeight.value = newHeight;
-      // Posisi X dan Y tidak berubah untuk BR
     })
     .onEnd(() => {
       runOnJS(saveSizeToStore)(
@@ -241,9 +260,14 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
       ],
       width: currentWidth.value,
       height: currentHeight.value,
-      borderColor: isFocused ? "lightblue" : "transparent",
+      // Change border color if snapping
+      borderColor: isFocused
+        ? isSnapping
+          ? "purple" // Snapping color
+          : "lightblue"
+        : "transparent",
       borderWidth: isFocused ? 1 : 0,
-      borderStyle: "dashed", // Style border hanya saat focused
+      borderStyle: "dashed",
     };
   });
 
@@ -297,7 +321,6 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
     if (!fontMgr) {
       return null;
     }
-    // Are the font loaded already?
     const paragraphStyle = {
       textAlign: TextAlign.Center,
     };
@@ -342,7 +365,7 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
                   {
                     fontFamily: item.styles?.font?.[0] || "sans-serif",
                     color: item.styles?.frontColor?.colorRaw || "black",
-                    fontSize: item.styles?.fontSize, // Pertahankan ukuran font dasar
+                    fontSize: item.styles?.fontSize,
                   },
                 ]}
                 value={item.text}
@@ -359,8 +382,7 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
               >
                 {(() => {
                   const p = createParagraph(item.text ?? "Hello", item.width);
-                  const heightCanvas = p?.getHeight(); // hitung tinggi yang dibutuhkan
-                  // console.log("heightCanvas", heightCanvas);
+                  const heightCanvas = p?.getHeight();
                   return (
                     <Canvas
                       style={{
@@ -420,4 +442,4 @@ const DraggableEditor = ({ item, isFocused, hCanvas, wCanvas }: Props) => {
   );
 };
 
-export default DraggableEditor;
+export default DraggableEditorV2;

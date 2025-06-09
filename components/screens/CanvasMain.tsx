@@ -16,7 +16,8 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { captureRef } from "react-native-view-shot";
-import DraggableEditor from "../ui/DraggableEditor";
+import DraggableEditorV3 from "../ui/DraggableEditorV2";
+import GuideLines from "../ui/GuideLines";
 import { ThemedButtonIcon } from "../ui/ThemedButtonIcon";
 import { ThemedText } from "../ui/ThemedText";
 import CanvasTemplate from "./CanvasTemplate";
@@ -177,25 +178,26 @@ const Content = () => {
               style={[
                 composeStyle,
                 {
-                  // width: width, // next bisa diatur lebar & tinggi canvasnya
-                  // height: width,
-                  backgroundColor: "red",
+                  width: width,
+                  height: width,
+                  backgroundColor: "white",
                 },
               ]}
             >
               <Animated.Image
                 style={[
-                  // composeStyle,
                   {
-                    width: width, // next bisa diatur lebar & tinggi canvasnya
+                    width: width,
                     height: width,
-                    backgroundColor: "white",
                   },
                 ]}
                 source={
                   typeof imageUri === "string" ? { uri: imageUri } : imageUri
                 }
               ></Animated.Image>
+
+              {focusedItemId && <GuideLines wCanvas={width} hCanvas={width} />}
+
               <OutsidePressHandler
                 onOutsidePress={() => {
                   setTimeout(() => {
@@ -205,10 +207,12 @@ const Content = () => {
               >
                 <View style={StyleSheet.absoluteFillObject}>
                   {items.map((item) => (
-                    <DraggableEditor
+                    <DraggableEditorV3
                       key={item.id}
                       item={item}
                       isFocused={focusedItemId === item.id}
+                      hCanvas={width}
+                      wCanvas={width}
                     />
                   ))}
                 </View>
@@ -222,7 +226,7 @@ const Content = () => {
               style={[
                 composeStyle,
                 {
-                  width: width, // next bisa diatur lebar & tinggi canvasnya
+                  width: width,
                   height: width,
                   backgroundColor: "white",
                 },
@@ -236,11 +240,16 @@ const Content = () => {
                 }}
               >
                 <View style={StyleSheet.absoluteFillObject}>
+                  {focusedItemId && (
+                    <GuideLines wCanvas={width} hCanvas={width} />
+                  )}
                   {items.map((item) => (
-                    <DraggableEditor
+                    <DraggableEditorV3
                       key={item.id}
                       item={item}
                       isFocused={focusedItemId === item.id}
+                      hCanvas={width}
+                      wCanvas={width}
                     />
                   ))}
                 </View>
@@ -285,6 +294,7 @@ const Content = () => {
         <ThemedButtonIcon iconName="image-frame" onPress={pickImageSticker} />
         <ThemedButtonIcon
           iconName="download-circle-outline"
+          disabled={focusedItemId !== null}
           onPress={downloadViewAsImage}
         />
       </View>
@@ -298,14 +308,17 @@ const Content = () => {
         }}
       >
         <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
-          <ThemedText type="default">
-            translation x: {Math.round(trX)}
-          </ThemedText>
+          <ThemedText type="default">x: {Math.round(trX)}</ThemedText>
         </Animated.View>
         <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
-          <ThemedText type="default">
-            translation y: {Math.round(trY)}
-          </ThemedText>
+          <ThemedText type="default">y: {Math.round(trY)}</ThemedText>
+        </Animated.View>
+
+        <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+          <ThemedText type="default">h: {Math.round(height)}</ThemedText>
+        </Animated.View>
+        <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
+          <ThemedText type="default">w: {Math.round(width)}</ThemedText>
         </Animated.View>
       </View>
       {focusedItemId !== null && (
@@ -318,13 +331,15 @@ const Content = () => {
           }}
         >
           <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
-            <ThemedText type="default">x: {itemTest.x}</ThemedText>
+            <ThemedText type="default">x: {Math.round(itemTest.x)}</ThemedText>
           </Animated.View>
           <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
-            <ThemedText type="default">y: {itemTest.y}</ThemedText>
+            <ThemedText type="default">y: {Math.round(itemTest.y)}</ThemedText>
           </Animated.View>
           <Animated.View style={{ padding: 6, backgroundColor: "darkred" }}>
-            <ThemedText type="default">height: {itemTest.height}</ThemedText>
+            <ThemedText type="default">
+              h: {Math.round(itemTest.height)}
+            </ThemedText>
           </Animated.View>
         </View>
       )}

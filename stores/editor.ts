@@ -24,8 +24,8 @@ export type EditorItem = {
   y: number;
   scale: number;
   rotation: number;
-  width: number; // <<-- TAMBAHKAN INI
-  height: number; // <<-- TAMBAHKAN INI
+  width: number;
+  height: number;
   // Properti spesifik teks
   text?: string;
   textColor?: string;
@@ -41,6 +41,8 @@ interface EditorState {
   items: EditorItem[];
   focusedItemId: string | null;
   nextId: number;
+  showVerticalGuide?: boolean,
+  showHorizontalGuide?: boolean,
   addTextEditor: (x: number, y: number) => void;
   addImageEditor: (x: number, y: number, img: string) => void;
   deleteEditor: (id: string) => void;
@@ -52,6 +54,8 @@ interface EditorState {
   updateItemSize: (id: string, newWidth: number, newHeight: number, newX: number, newY: number) => void;
   resetItemToCenter: (x: number, y: number) => void;
   setFocusedItem: (id: string | null) => void;
+  setVerticalGuide: (show: boolean) => void,
+  setHorizontalGuide: (show: boolean) => void,
   clearAllEditors: () => void;
 }
 
@@ -93,7 +97,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           },
           font: ['SpaceMono'],
           fontSize: 14,
-        }
+        },
       };
       return {
         items: [...state.items, newTextItem],
@@ -137,12 +141,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         imageStyles: {
           opacity: 1,
           borderRadius: 0,
-        }
+        },
       };
       return {
         items: [...state.items, newImageItem],
         nextId: state.nextId + 1,
         focusedItemId: newId,
+
       };
     });
   },
@@ -234,6 +239,14 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set({ focusedItemId: id });
   },
 
+  setVerticalGuide: (show: boolean) => {
+    set({ showVerticalGuide: show });
+  },
+
+  setHorizontalGuide: (show: boolean) => {
+    set({ showHorizontalGuide: show });
+  },
+
   clearAllEditors: () => {
     set({
       items: [],
@@ -242,5 +255,3 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     });
   },
 }));
-
-// const { width, height } = Dimensions.get("window");

@@ -8,24 +8,27 @@ interface ThemedButtonIconProps extends PressableProps {
   iconName?: keyof typeof MaterialCommunityIcons.glyphMap;
   label?: string;
   size?: number;
+  disabled?: boolean;
 }
 
 export function ThemedButtonIcon({
   iconName,
   label,
   size = 18,
+  disabled,
   ...pressableProps
 }: ThemedButtonIconProps) {
   const colorScheme = useColorScheme();
 
   return (
     <Pressable
+      disabled={disabled}
       style={({ pressed }) => [
         {
           backgroundColor: Colors[colorScheme || "light"].background,
           borderColor: Colors[colorScheme || "light"].border,
           borderWidth: 1,
-          opacity: pressed ? 0.5 : 1,
+          opacity: pressed || disabled ? 0.5 : 1,
           padding: 8,
           display: "flex",
           flexDirection: "row",
