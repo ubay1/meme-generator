@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Colors } from "@/constants/Colors";
 import { FontName } from "@/hooks/useFont";
 import { useEditorStore } from "@/stores/editor";
 import Slider from "@react-native-community/slider";
 import { Skia } from "@shopify/react-native-skia";
-// import debounce from "lodash.debounce";
-import { useEffect, useState } from "react";
+import debounce from "lodash.debounce";
+import { useCallback, useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -359,7 +360,12 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
             minimumTrackTintColor="#cdcdcd"
             maximumTrackTintColor="#bbb"
             step={1}
-            onValueChange={(value) => setPosisiXShadow(value)}
+            onValueChange={useCallback(
+              debounce((value) => {
+                setPosisiXShadow(value);
+              }, 100),
+              []
+            )}
             onSlidingComplete={(value) => {
               updateTextStyle(items.id, {
                 ...items.styles,
@@ -387,7 +393,12 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
             minimumTrackTintColor="#cdcdcd"
             maximumTrackTintColor="#bbb"
             step={1}
-            onValueChange={(value) => setPosisiYShadow(value)}
+            onValueChange={useCallback(
+              debounce((value) => {
+                setPosisiYShadow(value);
+              }, 100),
+              []
+            )}
             onSlidingComplete={(value) => {
               updateTextStyle(items.id, {
                 ...items.styles,
@@ -424,7 +435,12 @@ const TextStylesSheet = ({ id }: IPropsStyle) => {
           minimumTrackTintColor="#cdcdcd"
           maximumTrackTintColor="#bbb"
           step={1}
-          onValueChange={(value) => setLocalFontSize(value)}
+          onValueChange={useCallback(
+            debounce((value) => {
+              setLocalFontSize(value);
+            }, 100),
+            []
+          )}
           onSlidingComplete={(value) => {
             updateTextStyle(items.id, {
               ...items.styles,

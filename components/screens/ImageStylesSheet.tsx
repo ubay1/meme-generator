@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEditorStore } from "@/stores/editor";
 import Slider from "@react-native-community/slider";
-import { useEffect, useState } from "react";
+import debounce from "lodash.debounce";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { styleBottomSheet } from "../styles/meme-generate";
 import { ThemedText } from "../ui/ThemedText";
@@ -60,9 +62,12 @@ const ImageStylesSheet = ({ id }: IPropsStyle) => {
           maximumValue={1}
           minimumTrackTintColor="#cdcdcd"
           maximumTrackTintColor="#bbb"
-          onValueChange={(value) => {
-            setOpacity(value);
-          }}
+          onValueChange={useCallback(
+            debounce((value) => {
+              setOpacity(value);
+            }, 100),
+            []
+          )}
           onSlidingComplete={(value) => {
             updateImageStyle(items.id, {
               ...items.imageStyles,

@@ -16,6 +16,12 @@
       "android": {
         "buildType": "apk"
       }
+    },
+    "production2": {
+      "autoIncrement": true,
+      "android": {
+        "gradleCommand": ":app:assembleRelease"
+      }
     }
   },
   "submit": {
